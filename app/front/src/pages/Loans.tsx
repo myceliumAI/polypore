@@ -2,14 +2,8 @@ import React, { useEffect, useState } from "react";
 import { api, getErrorMessage } from "../api";
 
 type Item = { id: number; name: string };
-type Shoot = { id: number; name: string };
-type Loan = {
-  id: number;
-  item_id: number;
-  shoot_id: number;
-  quantity: number;
-  returned_at?: string | null;
-};
+type Shoot = { id: number; name: string; start_date: string; end_date: string };
+type Loan = { id: number; item_id: number; shoot_id: number; quantity: number };
 
 type IdOption = number | "";
 
@@ -42,11 +36,7 @@ export function Loans() {
     e.preventDefault();
     try {
       if (typeof itemId !== "number" || typeof shootId !== "number") return;
-      await api.post("/loans", {
-        item_id: itemId,
-        shoot_id: shootId,
-        quantity: qty,
-      });
+      await api.post("/loans", { item_id: itemId, shoot_id: shootId, quantity: qty });
       setItemId("");
       setShootId("");
       setQty(1);
@@ -56,8 +46,15 @@ export function Loans() {
     }
   };
 
-  const doReturn = async (id: number) => {
-    await api.post(`/returns/${id}`);
+  const canCancel = (loan: Loan) => {
+    const s = shoots.find((s) => s.id === loan.shoot_id);
+    if (!s) return false;
+    const start = new Date(s.start_date);
+    return Date.now() < start.getTime();
+  };
+
+  const cancelLoan = async (id: number) => {
+    await api.post(`/loans/${id}/cancel`);
     await load();
   };
 
@@ -75,12 +72,7 @@ export function Loans() {
       <h1 className="text-xl font-semibold">Loans</h1>
 
       <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <select
-          value={itemId}
-          onChange={onChangeItem}
-          className="border rounded px-3 py-2"
-          required
-        >
+        <select value={itemId} onChange={onChangeItem} className="border rounded px-3 py-2" required>
           <option value="">Select item…</option>
           {items.map((it) => (
             <option key={it.id} value={it.id}>
@@ -88,12 +80,7 @@ export function Loans() {
             </option>
           ))}
         </select>
-        <select
-          value={shootId}
-          onChange={onChangeShoot}
-          className="border rounded px-3 py-2"
-          required
-        >
+        <select value={shootId} onChange={onChangeShoot} className="border rounded px-3 py-2" required>
           <option value="">Select shoot…</option>
           {shoots.map((s) => (
             <option key={s.id} value={s.id}>
@@ -123,7 +110,6 @@ export function Loans() {
               <th className="py-2">Item</th>
               <th className="py-2">Shoot</th>
               <th className="py-2">Qty</th>
-              <th className="py-2">Returned</th>
               <th className="py-2">Action</th>
             </tr>
           </thead>
@@ -131,25 +117,21 @@ export function Loans() {
             {loans.map((ln) => (
               <tr key={ln.id} className="border-b">
                 <td className="py-2">{ln.id}</td>
-                <td className="py-2">
-                  {items.find((i) => i.id === ln.item_id)?.name || ln.item_id}
-                </td>
-                <td className="py-2">
-                  {shoots.find((s) => s.id === ln.shoot_id)?.name ||
-                    ln.shoot_id}
-                </td>
+                <td className="py-2">{items.find((i) => i.id === ln.item_id)?.name || ln.item_id}</td>
+                <td className="py-2">{shoots.find((s) => s.id === ln.shoot_id)?.name || ln.shoot_id}</td>
                 <td className="py-2">{ln.quantity}</td>
-                <td className="py-2">{ln.returned_at ? "Yes" : "No"}</td>
                 <td className="py-2">
-                  {!ln.returned_at && (
+                  {canCancel(ln) ? (
                     <button
                       onClick={() => {
-                        void doReturn(ln.id);
+                        void cancelLoan(ln.id);
                       }}
-                      className="text-blue-600 underline"
+                      className="text-red-600 underline"
                     >
-                      Return
+                      Cancel
                     </button>
+                  ) : (
+                    <span className="text-neutral-400">—</span>
                   )}
                 </td>
               </tr>

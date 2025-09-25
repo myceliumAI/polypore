@@ -22,7 +22,6 @@ Polypore is a tiny web app to manage your gear inventory for shoots. Declare ite
 | Inventory | Add items with name, type (camera/light/cable/other), total stock |
 | Shoots | Create shoots with name, location, start/end dates |
 | Loans | Reserve items for a shoot; prevents overbooking |
-| Returns | Manual return or automatic at shoot end (background task) |
 | Dashboard | Availability “now” per item (total vs available) |
 
 ## 🚀 Quickstart

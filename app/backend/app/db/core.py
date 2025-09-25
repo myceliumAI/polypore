@@ -39,11 +39,7 @@ def get_session() -> Iterator[Session]:
 
 
 class _AutoReturnTask:
-    """
-    Simple background loop to automatically mark loans as returned when end_date has passed.
-
-    This is a lightweight POC helper; for production use a scheduler.
-    """
+    """Background loop to auto-return overdue loans."""
 
     def __init__(self, interval_seconds: int = 30) -> None:
         self.interval_seconds = interval_seconds
@@ -58,19 +54,19 @@ class _AutoReturnTask:
                 now = datetime.now(timezone.utc)
                 with get_session() as session:
                     overdue = session.exec(
-                        select(Loan).where(
-                            Loan.returned_at.is_(None), Loan.end_date <= now
-                        )
+                        select(Loan).where(Loan.end_date <= now)
                     ).all()
+                    deleted = 0
                     for loan in overdue:
-                        loan.returned_at = now
-                    if overdue:
+                        session.delete(loan)
+                        deleted += 1
+                    if deleted:
                         session.commit()
                         print(
-                            f"✅ Auto-returned {len(overdue)} loan(s) at {now.isoformat()}"
+                            f"✅ Auto-canceled {deleted} loan(s) at {now.isoformat()}"
                         )
-            except Exception as exc:
-                print(f"⚠️ Auto-return task error: {exc}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"⚠️ Auto-cancel task error: {exc}")
             finally:
                 time.sleep(self.interval_seconds)
 
