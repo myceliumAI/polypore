@@ -1,10 +1,17 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta, date
 
 from sqlmodel import Session, select
 
 from ..models.item import Item
 from ..models.loan import Loan
-from ..schemas.dashboard import ItemAvailability
+from ..models.shoot import Shoot
+from ..schemas.dashboard import (
+    ItemAvailability,
+    ItemTimeline,
+    DayAvailability,
+    DayBreakdown,
+    TypeTimeline,
+)
 
 
 def to_utc_aware(dt: datetime) -> datetime:
@@ -97,3 +104,89 @@ def compute_inventory_rows(session: Session, when: datetime) -> list[ItemAvailab
             )
         )
     return rows
+
+
+def compute_timeline(session: Session, days: int = 90) -> list[ItemTimeline]:
+    """Compute per-item daily availability with breakdown for next `days`.
+
+    :param Session session: Active DB session
+    :param int days: Number of days to compute
+    :return list[ItemTimeline]: Per-item timeline
+    """
+    today = datetime.now(timezone.utc).date()
+    items: list[Item] = session.exec(select(Item)).all()
+    loans: list[Loan] = session.exec(select(Loan)).all()
+    shoots: dict[int, Shoot] = {s.id: s for s in session.exec(select(Shoot)).all()}
+
+    timelines: list[ItemTimeline] = []
+    for item in items:
+        series: list[DayAvailability] = []
+        for i in range(days):
+            d: date = today + timedelta(days=i)
+            day_start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
+            day_end = day_start + timedelta(days=1)
+
+            day_loans = [
+                ln
+                for ln in loans
+                if ln.item_id == item.id
+                and periods_overlap(ln.start_date, ln.end_date, day_start, day_end)
+            ]
+            total_reserved = sum(ln.quantity for ln in day_loans)
+            available = max(item.total_stock - total_reserved, 0)
+            breakdown = [
+                DayBreakdown(
+                    shoot_id=ln.shoot_id,
+                    shoot_name=(
+                        shoots.get(ln.shoot_id).name
+                        if shoots.get(ln.shoot_id)
+                        else str(ln.shoot_id)
+                    ),
+                    quantity=ln.quantity,
+                )
+                for ln in day_loans
+            ]
+            series.append(
+                DayAvailability(
+                    date=d.isoformat(),
+                    available=available,
+                    total=item.total_stock,
+                    breakdown=breakdown,
+                )
+            )
+        timelines.append(
+            ItemTimeline(item_id=item.id, name=item.name, type=item.type, series=series)
+        )
+    return timelines
+
+
+def compute_type_timeline(session: Session, days: int = 90) -> list[TypeTimeline]:
+    """Aggregate per-type daily availability from item timelines.
+
+    :param Session session: Active DB session
+    :param int days: Number of days to compute
+    :return list[TypeTimeline]: Per-item type timeline
+    """
+    item_series = compute_timeline(session, days=days)
+    # Build a dict: type -> list[DayAvailability] aggregated by day index
+    agg: dict[str, list[DayAvailability]] = {}
+    for item in item_series:
+        key = item.type.value if hasattr(item.type, "value") else str(item.type)
+        if key not in agg:
+            agg[key] = [
+                DayAvailability(date=day.date, available=0, total=0, breakdown=[])
+                for day in item.series
+            ]
+        for idx, day in enumerate(item.series):
+            agg[key][idx].available += day.available
+            agg[key][idx].total += day.total
+            # no need to merge breakdowns across items in type view (could explode), keep empty
+    return [
+        TypeTimeline(
+            type=item_series[0].type.__class__(k)
+            if hasattr(item_series[0].type, "__class__")
+            else k,
+            series=v,
+        )
+        for k, v in agg.items()
+    ]

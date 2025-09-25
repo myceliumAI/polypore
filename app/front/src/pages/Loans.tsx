@@ -36,7 +36,11 @@ export function Loans() {
     e.preventDefault();
     try {
       if (typeof itemId !== "number" || typeof shootId !== "number") return;
-      await api.post("/loans", { item_id: itemId, shoot_id: shootId, quantity: qty });
+      await api.post("/loans", {
+        item_id: itemId,
+        shoot_id: shootId,
+        quantity: qty,
+      });
       setItemId("");
       setShootId("");
       setQty(1);
@@ -72,7 +76,12 @@ export function Loans() {
       <h1 className="text-xl font-semibold">Loans</h1>
 
       <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <select value={itemId} onChange={onChangeItem} className="border rounded px-3 py-2" required>
+        <select
+          value={itemId}
+          onChange={onChangeItem}
+          className="border rounded px-3 py-2"
+          required
+        >
           <option value="">Select item…</option>
           {items.map((it) => (
             <option key={it.id} value={it.id}>
@@ -80,7 +89,12 @@ export function Loans() {
             </option>
           ))}
         </select>
-        <select value={shootId} onChange={onChangeShoot} className="border rounded px-3 py-2" required>
+        <select
+          value={shootId}
+          onChange={onChangeShoot}
+          className="border rounded px-3 py-2"
+          required
+        >
           <option value="">Select shoot…</option>
           {shoots.map((s) => (
             <option key={s.id} value={s.id}>
@@ -117,8 +131,13 @@ export function Loans() {
             {loans.map((ln) => (
               <tr key={ln.id} className="border-b">
                 <td className="py-2">{ln.id}</td>
-                <td className="py-2">{items.find((i) => i.id === ln.item_id)?.name || ln.item_id}</td>
-                <td className="py-2">{shoots.find((s) => s.id === ln.shoot_id)?.name || ln.shoot_id}</td>
+                <td className="py-2">
+                  {items.find((i) => i.id === ln.item_id)?.name || ln.item_id}
+                </td>
+                <td className="py-2">
+                  {shoots.find((s) => s.id === ln.shoot_id)?.name ||
+                    ln.shoot_id}
+                </td>
                 <td className="py-2">{ln.quantity}</td>
                 <td className="py-2">
                   {canCancel(ln) ? (
