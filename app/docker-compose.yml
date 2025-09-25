@@ -1,0 +1,30 @@
+ 
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: polypore-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend-data:/app/data
+    command: ["sh", "-lc", "make dev"]
+
+  front:
+    build:
+      context: ./front
+    container_name: polypore-front
+    env_file:
+      - ./front/.env
+    ports:
+      - "5173:5173"
+    command: ["sh", "-lc", "yarn dev --host 0.0.0.0 --port 5173"]
+
+networks:
+  default:
+    name: polypore-net
+
+volumes:
+  backend-data: 
