@@ -29,3 +29,25 @@ class ItemCreate(BaseModel):
             ]
         }
     )
+
+
+class ItemUpdate(BaseModel):
+    """Partial update for an inventory item."""
+
+    name: str | None = Field(
+        default=None, description="New name.", examples=["Canon C70 (Kit A)"]
+    )
+    type: ItemType | None = Field(
+        default=None, description="New category.", examples=[ItemType.CABLE]
+    )
+    total_stock: int | None = Field(
+        default=None, ge=0, description="New total stock (>=0).", examples=[5]
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"name": "Lens Olympus 25mm", "total_stock": 4},
+            ]
+        }
+    )

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { api, getErrorMessage } from "../api";
 
 type Item = { id: number; name: string };
-type Shoot = { id: number; name: string; start_date: string; end_date: string };
+type Shoot = { id: number; name: string; start_date: string };
 type Loan = { id: number; item_id: number; shoot_id: number; quantity: number };
 
 type IdOption = number | "";
+
+type Editing = { [id: number]: { quantity: number } };
 
 export function Loans() {
   const [items, setItems] = useState<Item[]>([]);
@@ -14,8 +16,9 @@ export function Loans() {
 
   const [itemId, setItemId] = useState<IdOption>("");
   const [shootId, setShootId] = useState<IdOption>("");
-  const [qty, setQty] = useState<number>(1);
+  const [qty, setQty] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Editing>({});
 
   const load = async () => {
     const [it, sh, ln] = await Promise.all([
@@ -32,7 +35,7 @@ export function Loans() {
     void load();
   }, []);
 
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (typeof itemId !== "number" || typeof shootId !== "number") return;
@@ -50,11 +53,29 @@ export function Loans() {
     }
   };
 
-  const canCancel = (loan: Loan) => {
+  const canEditOrCancel = (loan: Loan) => {
     const s = shoots.find((s) => s.id === loan.shoot_id);
     if (!s) return false;
-    const start = new Date(s.start_date);
-    return Date.now() < start.getTime();
+    return Date.now() < new Date(s.start_date).getTime();
+  };
+
+  const startEdit = (ln: Loan) => {
+    if (!canEditOrCancel(ln)) return;
+    setEditing({ ...editing, [ln.id]: { quantity: ln.quantity } });
+  };
+
+  const cancelEdit = (id: number) => {
+    const next = { ...editing };
+    delete next[id];
+    setEditing(next);
+  };
+
+  const saveEdit = async (id: number) => {
+    const e = editing[id];
+    if (!e) return;
+    await api.patch(`/loans/${id}`, { quantity: e.quantity });
+    cancelEdit(id);
+    await load();
   };
 
   const cancelLoan = async (id: number) => {
@@ -124,37 +145,85 @@ export function Loans() {
               <th className="py-2">Item</th>
               <th className="py-2">Shoot</th>
               <th className="py-2">Qty</th>
-              <th className="py-2">Action</th>
+              <th className="py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {loans.map((ln) => (
-              <tr key={ln.id} className="border-b">
-                <td className="py-2">{ln.id}</td>
-                <td className="py-2">
-                  {items.find((i) => i.id === ln.item_id)?.name || ln.item_id}
-                </td>
-                <td className="py-2">
-                  {shoots.find((s) => s.id === ln.shoot_id)?.name ||
-                    ln.shoot_id}
-                </td>
-                <td className="py-2">{ln.quantity}</td>
-                <td className="py-2">
-                  {canCancel(ln) ? (
-                    <button
-                      onClick={() => {
-                        void cancelLoan(ln.id);
-                      }}
-                      className="text-red-600 underline"
-                    >
-                      Cancel
-                    </button>
-                  ) : (
-                    <span className="text-neutral-400">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {loans.map((ln) => {
+              const e = editing[ln.id];
+              return (
+                <tr key={ln.id} className="border-b">
+                  <td className="py-2">{ln.id}</td>
+                  <td className="py-2">
+                    {items.find((i) => i.id === ln.item_id)?.name || ln.item_id}
+                  </td>
+                  <td className="py-2">
+                    {shoots.find((s) => s.id === ln.shoot_id)?.name ||
+                      ln.shoot_id}
+                  </td>
+                  <td className="py-2">
+                    {e ? (
+                      <input
+                        type="number"
+                        min={1}
+                        className="border rounded px-2 py-1 w-24"
+                        value={e.quantity}
+                        onChange={(ev) =>
+                          setEditing({
+                            ...editing,
+                            [ln.id]: {
+                              quantity: parseInt(ev.target.value || "1", 10),
+                            },
+                          })
+                        }
+                      />
+                    ) : (
+                      ln.quantity
+                    )}
+                  </td>
+                  <td className="py-2 space-x-2">
+                    {e ? (
+                      <>
+                        <button
+                          onClick={() => saveEdit(ln.id)}
+                          className="text-blue-600 underline"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={() => cancelEdit(ln.id)}
+                          className="text-neutral-600 underline"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {canEditOrCancel(ln) && (
+                          <>
+                            <button
+                              onClick={() => startEdit(ln)}
+                              className="text-blue-600 underline"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => cancelLoan(ln.id)}
+                              className="text-red-600 underline"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                        {!canEditOrCancel(ln) && (
+                          <span className="text-neutral-400">—</span>
+                        )}
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

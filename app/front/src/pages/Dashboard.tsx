@@ -158,10 +158,7 @@ export function Dashboard() {
                     )}
                   </td>
                   {row.series.map((day) => (
-                    <td
-                      key={`${row.key}-${day.date}`}
-                      className="py-2 px-2"
-                    >
+                    <td key={`${row.key}-${day.date}`} className="py-2 px-2">
                       <div
                         onMouseEnter={(e) => {
                           const rect = (
@@ -177,17 +174,17 @@ export function Dashboard() {
                           setTooltip((prev) =>
                             prev
                               ? {
-                                ...prev,
-                                x: e.clientX + 12,
-                                y: window.scrollY + e.clientY + 12,
-                              }
+                                  ...prev,
+                                  x: e.clientX + 12,
+                                  y: window.scrollY + e.clientY + 12,
+                                }
                               : prev,
                           );
                         }}
                         onMouseLeave={() => setTooltip(null)}
                         className={`h-6 w-6 rounded-md ${cellColor(
                           day.available,
-                          day.total
+                          day.total,
                         )} cursor-help ring-1 ring-white/50 dark:ring-neutral-900/60 hover:scale-105 transition-transform`}
                         aria-label={`${day.date}: ${day.available}/${day.total}`}
                         role="img"

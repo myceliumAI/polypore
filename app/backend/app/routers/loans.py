@@ -9,7 +9,7 @@ from ..db.core import get_session
 from ..models.item import Item
 from ..models.shoot import Shoot
 from ..models.loan import Loan
-from ..schemas.loans import LoanCreate
+from ..schemas.loans import LoanCreate, LoanUpdate
 from ..services.availability import reserved_quantity_for_item, to_utc_aware
 
 router = APIRouter()
@@ -55,20 +55,59 @@ def create_loan(payload: LoanCreate) -> Loan:
 
 @router.get("/", response_model=list[Loan])
 def list_loans() -> list[Loan]:
-    """List all loans.
-
-    :return list[Loan]: Loans
-    """
     with get_session() as session:
         return session.exec(select(Loan)).all()
+
+
+@router.patch("/{loan_id}", response_model=Loan)
+def update_loan(loan_id: int, payload: LoanUpdate) -> Loan:
+    """Update a loan (quantity only in this POC).
+
+    :param int loan_id: Loan ID
+    :param LoanUpdate payload: Loan information
+    :return Loan: Updated loan
+    """
+    with get_session() as session:
+        loan = session.get(Loan, loan_id)
+        if not loan:
+            raise HTTPException(status_code=404, detail="loan not found")
+        now = datetime.now(timezone.utc)
+        if to_utc_aware(loan.start_date) <= now:
+            raise HTTPException(
+                status_code=400, detail="loan already started; cannot modify"
+            )
+        if payload.quantity is not None:
+            if payload.quantity < 1:
+                raise HTTPException(status_code=400, detail="quantity must be >= 1")
+            # Re-check availability with new qty
+            item = session.get(Item, loan.item_id)
+            if not item:
+                raise HTTPException(status_code=404, detail="item not found")
+            reserved = reserved_quantity_for_item(
+                session, item.id, loan.start_date, loan.end_date
+            )
+            # remove current loan's quantity from reserved to avoid double counting
+            reserved -= loan.quantity
+            available = item.total_stock - reserved
+            if payload.quantity > available:
+                raise HTTPException(
+                    status_code=400,
+                    detail="❌ Plus de matériel disponible pour ces dates",
+                )
+            loan.quantity = payload.quantity
+        session.add(loan)
+        session.commit()
+        session.refresh(loan)
+        print("✅ Updated loan", loan.id)
+        return loan
 
 
 @router.post("/{loan_id}/cancel", status_code=204)
 def cancel_loan(loan_id: int) -> Response:
     """Cancel a future loan; not allowed if loan has started.
 
-    :param int loan_id: Loan identifier
-    :return Response: Empty response
+    :param int loan_id: Loan ID
+    :return Response: Response
     """
     now = datetime.now(timezone.utc)
     with get_session() as session:
