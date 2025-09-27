@@ -24,7 +24,12 @@ type TypeTimeline = {
   series: DayAvailability[];
 };
 
-type Row = { key: string | number; label: string; sublabel?: string; series: DayAvailability[] };
+type Row = {
+  key: string | number;
+  label: string;
+  sublabel?: string;
+  series: DayAvailability[];
+};
 
 type Mode = "items" | "types";
 
@@ -44,7 +49,9 @@ function cellColor(available: number, total: number): string {
 function formatTooltip(day: DayAvailability, label: string): string[] {
   const header = `${day.date} — ${label}`;
   const avail = `${day.available}/${day.total} available`;
-  const lines = day.breakdown.length ? day.breakdown.map((b) => `• ${b.shoot_name} (${b.quantity})`) : ["No reservations"];
+  const lines = day.breakdown.length
+    ? day.breakdown.map((b) => `• ${b.shoot_name} (${b.quantity})`)
+    : ["No reservations"];
   return [header, avail, ...lines];
 }
 
@@ -53,27 +60,49 @@ export function Dashboard() {
   const [rows, setRows] = useState<Row[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; lines: string[] } | null>(null);
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    lines: string[];
+  } | null>(null);
 
   useEffect(() => {
     setLoading(true);
-    const endpoint = mode === "items" ? "/dashboard/timeline" : "/dashboard/timeline-by-type";
+    const endpoint =
+      mode === "items" ? "/dashboard/timeline" : "/dashboard/timeline-by-type";
     api
       .get(endpoint + `?days=${DAYS}`)
       .then((r) => {
         if (mode === "items") {
           const data = r.data as ItemTimeline[];
-          setRows(data.map((it) => ({ key: it.item_id, label: it.name, sublabel: it.type, series: it.series })));
+          setRows(
+            data.map((it) => ({
+              key: it.item_id,
+              label: it.name,
+              sublabel: it.type,
+              series: it.series,
+            })),
+          );
         } else {
           const data = r.data as TypeTimeline[];
-          setRows(data.map((t) => ({ key: t.type, label: t.type, sublabel: undefined, series: t.series })));
+          setRows(
+            data.map((t) => ({
+              key: t.type,
+              label: t.type,
+              sublabel: undefined,
+              series: t.series,
+            })),
+          );
         }
       })
       .catch((err) => setError(getErrorMessage(err)))
       .finally(() => setLoading(false));
   }, [mode]);
 
-  const allDates = useMemo(() => (rows.length === 0 ? [] : rows[0].series.map((d) => d.date)), [rows]);
+  const allDates = useMemo(
+    () => (rows.length === 0 ? [] : rows[0].series.map((d) => d.date)),
+    [rows],
+  );
   const minWidthPx = STICKY_COL_PX + allDates.length * CELL_PX;
 
   return (
@@ -81,10 +110,16 @@ export function Dashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Overview</h1>
         <div className="flex items-center gap-2 text-sm">
-          <button onClick={() => setMode("items")} className={`btn ${mode === "items" ? "btn-primary" : "btn-ghost"}`}>
+          <button
+            onClick={() => setMode("items")}
+            className={`btn ${mode === "items" ? "btn-primary" : "btn-ghost"}`}
+          >
             Items
           </button>
-          <button onClick={() => setMode("types")} className={`btn ${mode === "types" ? "btn-primary" : "btn-ghost"}`}>
+          <button
+            onClick={() => setMode("types")}
+            className={`btn ${mode === "types" ? "btn-primary" : "btn-ghost"}`}
+          >
             Types
           </button>
           <div className="text-neutral-500 ml-3">Horizon: {DAYS} days</div>
@@ -97,16 +132,26 @@ export function Dashboard() {
       {!loading && !error && (
         <div className="card p-0">
           {/* Only this inner container scrolls horizontally */}
-          <div className="relative max-w-full overflow-x-auto custom-scrollbar" style={{ overscrollBehaviorX: "contain" }}>
+          <div
+            className="relative max-w-full overflow-x-auto custom-scrollbar"
+            style={{ overscrollBehaviorX: "contain" }}
+          >
             <div className="inline-block" style={{ minWidth: minWidthPx }}>
               <table className="w-full text-sm align-top">
                 <thead>
                   <tr className="text-left whitespace-nowrap">
-                    <th className="py-3 pr-8 sticky left-0 bg-white dark:bg-neutral-900 z-10 text-neutral-700 dark:text-neutral-200" style={{ minWidth: STICKY_COL_PX }}>
+                    <th
+                      className="py-3 pr-8 sticky left-0 bg-white dark:bg-neutral-900 z-10 text-neutral-700 dark:text-neutral-200"
+                      style={{ minWidth: STICKY_COL_PX }}
+                    >
                       {mode === "items" ? "Item" : "Type"}
                     </th>
                     {allDates.map((d) => (
-                      <th key={d} className="py-3 px-2 text-[11px] font-medium whitespace-nowrap text-neutral-500" style={{ width: CELL_PX }}>
+                      <th
+                        key={d}
+                        className="py-3 px-2 text-[11px] font-medium whitespace-nowrap text-neutral-500"
+                        style={{ width: CELL_PX }}
+                      >
                         {d.slice(5)}
                       </th>
                     ))}
@@ -114,20 +159,50 @@ export function Dashboard() {
                 </thead>
                 <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-800">
                   {rows.map((row) => (
-                    <tr key={row.key} className="bg-white/40 dark:bg-neutral-900/40 whitespace-nowrap">
-                      <td className="py-3 pr-8 sticky left-0 bg-white dark:bg-neutral-900 z-10" style={{ minWidth: STICKY_COL_PX }}>
-                        <div className="font-medium capitalize text-neutral-900 dark:text-neutral-100">{row.label}</div>
-                        {row.sublabel && <div className="text-xs text-neutral-500 capitalize">{row.sublabel}</div>}
+                    <tr
+                      key={row.key}
+                      className="bg-white/40 dark:bg-neutral-900/40 whitespace-nowrap"
+                    >
+                      <td
+                        className="py-3 pr-8 sticky left-0 bg-white dark:bg-neutral-900 z-10"
+                        style={{ minWidth: STICKY_COL_PX }}
+                      >
+                        <div className="font-medium capitalize text-neutral-900 dark:text-neutral-100">
+                          {row.label}
+                        </div>
+                        {row.sublabel && (
+                          <div className="text-xs text-neutral-500 capitalize">
+                            {row.sublabel}
+                          </div>
+                        )}
                       </td>
                       {row.series.map((day) => (
-                        <td key={`${row.key}-${day.date}`} className="py-2 px-2" style={{ width: CELL_PX }}>
+                        <td
+                          key={`${row.key}-${day.date}`}
+                          className="py-2 px-2"
+                          style={{ width: CELL_PX }}
+                        >
                           <div
                             onMouseEnter={(e) => {
-                              const rect = (e.target as HTMLElement).getBoundingClientRect();
-                              setTooltip({ x: rect.left + rect.width + 10, y: rect.top + window.scrollY + rect.height + 10, lines: formatTooltip(day, row.label) });
+                              const rect = (
+                                e.target as HTMLElement
+                              ).getBoundingClientRect();
+                              setTooltip({
+                                x: rect.left + rect.width + 10,
+                                y: rect.top + window.scrollY + rect.height + 10,
+                                lines: formatTooltip(day, row.label),
+                              });
                             }}
                             onMouseMove={(e) => {
-                              setTooltip((prev) => (prev ? { ...prev, x: e.clientX + 12, y: window.scrollY + e.clientY + 12 } : prev));
+                              setTooltip((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      x: e.clientX + 12,
+                                      y: window.scrollY + e.clientY + 12,
+                                    }
+                                  : prev,
+                              );
                             }}
                             onMouseLeave={() => setTooltip(null)}
                             className={`h-6 w-6 rounded-md ${cellColor(day.available, day.total)} cursor-help ring-1 ring-white/50 dark:ring-neutral-900/60 hover:scale-105 transition-transform`}
@@ -150,20 +225,28 @@ export function Dashboard() {
           <span className="inline-block h-3.5 w-3.5 rounded-sm bg-red-500" /> 0
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-orange-400" /> low
+          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-orange-400" />{" "}
+          low
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-yellow-300" /> medium
+          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-yellow-300" />{" "}
+          medium
         </span>
         <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-green-500" /> high
+          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-green-500" />{" "}
+          high
         </span>
       </div>
 
       {tooltip && (
-        <div className="fixed z-50 max-w-xs tooltip" style={{ top: tooltip.y, left: tooltip.x }}>
+        <div
+          className="fixed z-50 max-w-xs tooltip"
+          style={{ top: tooltip.y, left: tooltip.x }}
+        >
           <div className="font-medium mb-1">{tooltip.lines[0]}</div>
-          <div className="mb-1 text-neutral-600 dark:text-neutral-300">{tooltip.lines[1]}</div>
+          <div className="mb-1 text-neutral-600 dark:text-neutral-300">
+            {tooltip.lines[1]}
+          </div>
           <ul className="list-disc pl-4">
             {tooltip.lines.slice(2).map((l, i) => (
               <li key={i}>{l.replace(/^•\s*/, "")}</li>

@@ -21,9 +21,10 @@ function App() {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-xl transition-colors ${isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-xl transition-colors ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
               end
@@ -33,9 +34,10 @@ function App() {
             <NavLink
               to="/inventory"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-xl transition-colors ${isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-xl transition-colors ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -44,9 +46,10 @@ function App() {
             <NavLink
               to="/loans"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-xl transition-colors ${isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-xl transition-colors ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -55,9 +58,10 @@ function App() {
             <NavLink
               to="/shoots"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-xl transition-colors ${isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-xl transition-colors ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -88,7 +92,10 @@ function App() {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `px-3 py-1.5 rounded-xl text-sm ${isActive ? "bg-blue-600 text-white" : "text-neutral-700 dark:text-neutral-300"
+            `px-3 py-1.5 rounded-xl text-sm ${
+              isActive
+                ? "bg-blue-600 text-white"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
           end
@@ -98,7 +105,10 @@ function App() {
         <NavLink
           to="/inventory"
           className={({ isActive }) =>
-            `px-3 py-1.5 rounded-xl text-sm ${isActive ? "bg-blue-600 text-white" : "text-neutral-700 dark:text-neutral-300"
+            `px-3 py-1.5 rounded-xl text-sm ${
+              isActive
+                ? "bg-blue-600 text-white"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
@@ -107,7 +117,10 @@ function App() {
         <NavLink
           to="/loans"
           className={({ isActive }) =>
-            `px-3 py-1.5 rounded-xl text-sm ${isActive ? "bg-blue-600 text-white" : "text-neutral-700 dark:text-neutral-300"
+            `px-3 py-1.5 rounded-xl text-sm ${
+              isActive
+                ? "bg-blue-600 text-white"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
@@ -116,7 +129,10 @@ function App() {
         <NavLink
           to="/shoots"
           className={({ isActive }) =>
-            `px-3 py-1.5 rounded-xl text-sm ${isActive ? "bg-blue-600 text-white" : "text-neutral-700 dark:text-neutral-300"
+            `px-3 py-1.5 rounded-xl text-sm ${
+              isActive
+                ? "bg-blue-600 text-white"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
