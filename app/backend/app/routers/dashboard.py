@@ -6,6 +6,7 @@ from fastapi import APIRouter, Query, status
 
 from ..db.core import get_session
 from ..schemas.dashboard import ItemAvailability, ItemTimeline, TypeTimeline
+from ..schemas.errors import ApiError, ErrorCode
 from ..services.availability import (
     compute_inventory_rows,
     compute_timeline,
@@ -26,18 +27,18 @@ router = APIRouter(tags=["Dashboard"])
         200: {
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "item_id": 1,
-                            "name": "Canon C70",
-                            "type": "camera",
-                            "total_stock": 2,
-                            "available_now": 1,
-                        }
-                    ]
+                    "example": [ItemAvailability.example() or {}],
+                },
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": ApiError.example_for(ErrorCode.INTERNAL_ERROR)
                 }
-            }
-        }
+            },
+        },
     },
 )
 def inventory_dashboard() -> list[ItemAvailability]:
@@ -62,24 +63,18 @@ def inventory_dashboard() -> list[ItemAvailability]:
         200: {
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "item_id": 1,
-                            "name": "Canon C70",
-                            "type": "camera",
-                            "series": [
-                                {
-                                    "date": "2025-10-01",
-                                    "available": 1,
-                                    "total": 2,
-                                    "breakdown": [],
-                                }
-                            ],
-                        }
-                    ]
+                    "example": [ItemTimeline.example() or {}],
+                },
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": ApiError.example_for(ErrorCode.INTERNAL_ERROR)
                 }
-            }
-        }
+            },
+        },
     },
 )
 def timeline(days: int = Query(90, ge=1, le=365)) -> list[ItemTimeline]:
@@ -104,22 +99,18 @@ def timeline(days: int = Query(90, ge=1, le=365)) -> list[ItemTimeline]:
         200: {
             "content": {
                 "application/json": {
-                    "example": [
-                        {
-                            "type": "camera",
-                            "series": [
-                                {
-                                    "date": "2025-10-01",
-                                    "available": 3,
-                                    "total": 5,
-                                    "breakdown": [],
-                                }
-                            ],
-                        }
-                    ]
+                    "example": [TypeTimeline.example() or {}],
+                },
+            },
+        },
+        500: {
+            "description": "Internal server error",
+            "content": {
+                "application/json": {
+                    "example": ApiError.example_for(ErrorCode.INTERNAL_ERROR)
                 }
-            }
-        }
+            },
+        },
     },
 )
 def timeline_by_type(days: int = Query(90, ge=1, le=365)) -> list[TypeTimeline]:

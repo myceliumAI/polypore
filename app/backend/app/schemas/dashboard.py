@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import Field, ConfigDict
 from ..models.item import ItemType
+from .base import BaseSchema
 
 
-class ItemAvailability(BaseModel):
+class ItemAvailability(BaseSchema):
     """Snapshot of per-item availability at a given instant (used in dashboard)."""
 
     item_id: int = Field(
@@ -46,7 +47,7 @@ class ItemAvailability(BaseModel):
     )
 
 
-class DayBreakdown(BaseModel):
+class DayBreakdown(BaseSchema):
     """Breakdown of per-shoot reservations for a given day."""
 
     shoot_id: int = Field(
@@ -66,7 +67,7 @@ class DayBreakdown(BaseModel):
     )
 
 
-class DayAvailability(BaseModel):
+class DayAvailability(BaseSchema):
     """Daily availability for an item."""
 
     date: str = Field(
@@ -91,7 +92,7 @@ class DayAvailability(BaseModel):
     )
 
 
-class ItemTimeline(BaseModel):
+class ItemTimeline(BaseSchema):
     """Timeline of availability for an item."""
 
     item_id: int = Field(
@@ -109,12 +110,12 @@ class ItemTimeline(BaseModel):
     series: list[DayAvailability] = Field(
         ...,
         examples=[
-            [{"date": "2025-10-01", "available": 1, "total": 2, "breakdown": []}]
+            [{"date": "2025-10-01", "available": 1, "total": 2, "breakdown": []}],
         ],
     )
 
 
-class TypeTimeline(BaseModel):
+class TypeTimeline(BaseSchema):
     """Timeline of availability for an item type."""
 
     type: ItemType = Field(

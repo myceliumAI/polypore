@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .db.core import create_db_and_tables, auto_return_task
 from .routers import items, shoots, loans, dashboard
@@ -32,8 +34,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(FastAPIHTTPException)
+async def http_exception_handler(
+    request: Request,
+    exc: FastAPIHTTPException,
+) -> JSONResponse:
+    """
+    Global handler to ensure error responses are top-level objects matching our schemas.
+    Accepts either plain-string detail or structured dict with `detail` and `code`.
+    """
+    payload: dict
+    if isinstance(exc.detail, dict):
+        payload = exc.detail
+    else:
+        payload = {"detail": str(exc.detail), "code": "INTERNAL_ERROR"}
+    return JSONResponse(status_code=exc.status_code, content=payload)
+
+
 # Routers
-app.include_router(items.router, prefix="/items", tags=["items"])
-app.include_router(shoots.router, prefix="/shoots", tags=["shoots"])
-app.include_router(loans.router, prefix="/loans", tags=["loans"])
-app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
+app.include_router(items.router, prefix="/items")
+app.include_router(shoots.router, prefix="/shoots")
+app.include_router(loans.router, prefix="/loans")
+app.include_router(dashboard.router, prefix="/dashboard")

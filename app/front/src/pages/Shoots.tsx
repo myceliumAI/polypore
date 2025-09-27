@@ -83,23 +83,31 @@ export function Shoots() {
   };
 
   const del = async (id: number) => {
-    await api.delete(`/shoots/${id}`);
-    await load();
+    try {
+      await api.delete(`/shoots/${id}`);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   const downloadCsv = async (id: number) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/shoots/${id}/packing-list.csv`,
-    );
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `shoot_${id}_packing_list.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/shoots/${id}/packing-list.csv`,
+      );
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `shoot_${id}_packing_list.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   return (
@@ -230,7 +238,7 @@ export function Shoots() {
                     {e ? (
                       <>
                         <button
-                          onClick={() => saveEdit(s.id)}
+                          onClick={() => void saveEdit(s.id)}
                           className="text-blue-600 underline"
                         >
                           Save
@@ -251,7 +259,7 @@ export function Shoots() {
                           Edit
                         </button>
                         <button
-                          onClick={() => del(s.id)}
+                          onClick={() => void del(s.id)}
                           className="text-red-600 underline"
                         >
                           Delete

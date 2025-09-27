@@ -55,14 +55,22 @@ export function Inventory() {
   const saveEdit = async (id: number) => {
     const e = editing[id];
     if (!e) return;
-    await api.patch(`/items/${id}`, e);
-    cancelEdit(id);
-    await load();
+    try {
+      await api.patch(`/items/${id}`, e);
+      cancelEdit(id);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   const del = async (id: number) => {
-    await api.delete(`/items/${id}`);
-    await load();
+    try {
+      await api.delete(`/items/${id}`);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   return (
@@ -183,7 +191,7 @@ export function Inventory() {
                     {e ? (
                       <>
                         <button
-                          onClick={() => saveEdit(it.id)}
+                          onClick={() => void saveEdit(it.id)}
                           className="text-blue-600 underline"
                         >
                           Save
@@ -204,7 +212,7 @@ export function Inventory() {
                           Edit
                         </button>
                         <button
-                          onClick={() => del(it.id)}
+                          onClick={() => void del(it.id)}
                           className="text-red-600 underline"
                         >
                           Delete

@@ -1,8 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import Field, ConfigDict
+from .base import BaseSchema
 
 
-class ShootCreate(BaseModel):
+class ShootCreate(BaseSchema):
     """Payload to create a new shoot (tournage)."""
 
     name: str = Field(
@@ -34,13 +35,13 @@ class ShootCreate(BaseModel):
                     "location": "Studio X, Paris",
                     "start_date": "2025-09-26T09:00:00Z",
                     "end_date": "2025-09-26T18:00:00Z",
-                }
-            ]
+                },
+            ],
         }
     )
 
 
-class ShootUpdate(BaseModel):
+class ShootUpdate(BaseSchema):
     """Partial update for a shoot."""
 
     name: str | None = Field(
@@ -68,6 +69,55 @@ class ShootUpdate(BaseModel):
         json_schema_extra={
             "examples": [
                 {"location": "Studio Y, Paris", "end_date": "2025-09-27T18:00:00Z"},
-            ]
+            ],
         }
+    )
+
+
+class ShootRead(BaseSchema):
+    """
+    Response schema for a shoot.
+
+    :param int id: Shoot ID
+    :param str name: Name
+    :param str location: Location
+    :param datetime start_date: Start datetime
+    :param datetime end_date: End datetime
+    :return ShootRead: Shoot representation
+    """
+
+    id: int = Field(
+        ...,
+        examples=[1],
+    )
+    name: str = Field(
+        ...,
+        examples=["Promo 2025"],
+    )
+    location: str = Field(
+        ...,
+        examples=["Studio X, Paris"],
+    )
+    start_date: datetime = Field(
+        ...,
+        examples=["2025-09-26T09:00:00Z"],
+    )
+    end_date: datetime = Field(
+        ...,
+        examples=["2025-09-26T18:00:00Z"],
+    )
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "examples": [
+                {
+                    "id": 1,
+                    "name": "Promo 2025",
+                    "location": "Studio X, Paris",
+                    "start_date": "2025-09-26T09:00:00Z",
+                    "end_date": "2025-09-26T18:00:00Z",
+                },
+            ],
+        },
     )

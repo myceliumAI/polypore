@@ -73,14 +73,22 @@ export function Loans() {
   const saveEdit = async (id: number) => {
     const e = editing[id];
     if (!e) return;
-    await api.patch(`/loans/${id}`, { quantity: e.quantity });
-    cancelEdit(id);
-    await load();
+    try {
+      await api.patch(`/loans/${id}`, { quantity: e.quantity });
+      cancelEdit(id);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   const cancelLoan = async (id: number) => {
-    await api.post(`/loans/${id}/cancel`);
-    await load();
+    try {
+      await api.post(`/loans/${id}/cancel`);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
   };
 
   const onChangeItem = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -185,7 +193,7 @@ export function Loans() {
                     {e ? (
                       <>
                         <button
-                          onClick={() => saveEdit(ln.id)}
+                          onClick={() => void saveEdit(ln.id)}
                           className="text-blue-600 underline"
                         >
                           Save
@@ -208,7 +216,7 @@ export function Loans() {
                               Edit
                             </button>
                             <button
-                              onClick={() => cancelLoan(ln.id)}
+                              onClick={() => void cancelLoan(ln.id)}
                               className="text-red-600 underline"
                             >
                               Cancel

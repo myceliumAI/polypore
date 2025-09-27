@@ -4,7 +4,7 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export const api = axios.create({ baseURL: API_URL });
 
-type ApiErrorData = { detail?: string; message?: string };
+type ApiErrorData = { detail?: string; code?: string; message?: string };
 
 function hasMessage(e: unknown): e is { message: string } {
   return (
@@ -24,14 +24,18 @@ function isApiErrorData(d: unknown): d is ApiErrorData {
   const hasMessage =
     "message" in rec &&
     (typeof rec.message === "string" || typeof rec.message === "undefined");
-  return hasDetail || hasMessage;
+  const hasCode =
+    "code" in rec &&
+    (typeof rec.code === "string" || typeof rec.code === "undefined");
+  return hasDetail || hasMessage || hasCode;
 }
 
 export function getErrorMessage(err: unknown): string {
   if (axios.isAxiosError(err)) {
     const data = err.response?.data;
     if (isApiErrorData(data)) {
-      return data.detail ?? data.message ?? err.message;
+      const base = data.detail ?? data.message ?? err.message;
+      return data.code ? `${base} (${data.code})` : base;
     }
     return err.message;
   }
