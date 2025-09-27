@@ -17,7 +17,6 @@ engine = create_engine(
 def create_db_and_tables() -> None:
     """
     Create all database tables if they do not exist.
-
     """
     # Ensure models are imported so relationship string references resolve in mapper
     from ..models import item as _item  # noqa: F401
@@ -42,11 +41,19 @@ class _AutoReturnTask:
     """Background loop to auto-return overdue loans."""
 
     def __init__(self, interval_seconds: int = 30) -> None:
+        """
+        Initialize the auto-return task.
+
+        :param int interval_seconds: Interval in seconds
+        """
         self.interval_seconds = interval_seconds
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
 
     def _run(self) -> None:
+        """
+        Run the auto-return task.
+        """
         from ..models.loan import Loan
 
         while not self._stop_event.is_set():

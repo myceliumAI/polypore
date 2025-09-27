@@ -8,6 +8,10 @@ if TYPE_CHECKING:
 
 
 class ItemType(str, Enum):
+    """
+    The type of an item.
+    """
+
     CAMERA = "camera"
     LIGHT = "light"
     CABLE = "cable"

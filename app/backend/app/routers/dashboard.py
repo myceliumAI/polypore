@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, status
 
 from ..db.core import get_session
 from ..schemas.dashboard import ItemAvailability, ItemTimeline, TypeTimeline
@@ -12,40 +12,122 @@ from ..services.availability import (
     compute_type_timeline,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Dashboard"])
 
 
-@router.get("/inventory", response_model=list[ItemAvailability])
+@router.get(
+    "/inventory",
+    response_model=list[ItemAvailability],
+    status_code=status.HTTP_200_OK,
+    summary="Inventory snapshot",
+    description="Return current availability per item (now).",
+    response_description="List of items with availability now",
+    responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "item_id": 1,
+                            "name": "Canon C70",
+                            "type": "camera",
+                            "total_stock": 2,
+                            "available_now": 1,
+                        }
+                    ]
+                }
+            }
+        }
+    },
+)
 def inventory_dashboard() -> list[ItemAvailability]:
     """
-    Compute availability now per item based on active loans (not yet returned and overlapping now).
+    Current per-item availability snapshot.
 
-    :return list[ItemAvailability]: Dashboard rows
+    :return list[ItemAvailability]: Snapshot rows
     """
     now = datetime.now(timezone.utc)
     with get_session() as session:
         return compute_inventory_rows(session, now)
 
 
-@router.get("/timeline", response_model=list[ItemTimeline])
+@router.get(
+    "/timeline",
+    response_model=list[ItemTimeline],
+    status_code=status.HTTP_200_OK,
+    summary="Item timelines",
+    description="Per-item daily availability with breakdown for the next N days.",
+    response_description="Per-item series",
+    responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "item_id": 1,
+                            "name": "Canon C70",
+                            "type": "camera",
+                            "series": [
+                                {
+                                    "date": "2025-10-01",
+                                    "available": 1,
+                                    "total": 2,
+                                    "breakdown": [],
+                                }
+                            ],
+                        }
+                    ]
+                }
+            }
+        }
+    },
+)
 def timeline(days: int = Query(90, ge=1, le=365)) -> list[ItemTimeline]:
     """
-    Compute per-item daily availability with breakdown for next `days`.
+    Per-item daily availability for the next `days`.
 
-    :param int days: Number of days to compute
-    :return list[ItemTimeline]: Per-item timeline
+    :param int days: Horizon in days
+    :return list[ItemTimeline]: Per-item series
     """
     with get_session() as session:
         return compute_timeline(session, days=days)
 
 
-@router.get("/timeline-by-type", response_model=list[TypeTimeline])
+@router.get(
+    "/timeline-by-type",
+    response_model=list[TypeTimeline],
+    status_code=status.HTTP_200_OK,
+    summary="Type timelines",
+    description="Per-type daily availability aggregated across items for the next N days.",
+    response_description="Per-type series",
+    responses={
+        200: {
+            "content": {
+                "application/json": {
+                    "example": [
+                        {
+                            "type": "camera",
+                            "series": [
+                                {
+                                    "date": "2025-10-01",
+                                    "available": 3,
+                                    "total": 5,
+                                    "breakdown": [],
+                                }
+                            ],
+                        }
+                    ]
+                }
+            }
+        }
+    },
+)
 def timeline_by_type(days: int = Query(90, ge=1, le=365)) -> list[TypeTimeline]:
     """
-    Compute per-item type daily availability with breakdown for next `days`.
+    Per-type daily availability for the next `days`.
 
-    :param int days: Number of days to compute
-    :return list[TypeTimeline]: Per-item type timeline
+    :param int days: Horizon in days
+    :return list[TypeTimeline]: Per-type series
     """
     with get_session() as session:
         return compute_type_timeline(session, days=days)

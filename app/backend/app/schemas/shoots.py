@@ -6,7 +6,9 @@ class ShootCreate(BaseModel):
     """Payload to create a new shoot (tournage)."""
 
     name: str = Field(
-        ..., description="Shoot/project name.", examples=["Promo 2025", "Clip A.B."]
+        ...,
+        description="Shoot/project name.",
+        examples=["Promo 2025", "Clip A.B."],
     )
     location: str = Field(
         ...,
@@ -42,10 +44,14 @@ class ShootUpdate(BaseModel):
     """Partial update for a shoot."""
 
     name: str | None = Field(
-        default=None, description="New name.", examples=["Promo 2025 - Day 2"]
+        default=None,
+        description="New name.",
+        examples=["Promo 2025 - Day 2"],
     )
     location: str | None = Field(
-        default=None, description="New location.", examples=["Studio Y, Paris"]
+        default=None,
+        description="New location.",
+        examples=["Studio Y, Paris"],
     )
     start_date: datetime | None = Field(
         default=None,
