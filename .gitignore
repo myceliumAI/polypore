@@ -15,6 +15,7 @@ ruff_cache/
 # uv
 .venv/
 .uv/
+uv.lock
 
 # SQLite data
 app/backend/data/

@@ -1,43 +1,32 @@
+<p align="center">
+  <img src="static/logo.png" alt="Polypore logo" width="120"/>
+</p>
+
 <div align="center">
 
-<img alt="Polypore" src="https://em-content.zobj.net/source/microsoft-teams/363/card-file-box_1f5c3-fe0f.png" width="96" />
+# Polypore
 
+### Inventory & Loan Management for Film Gear
 
-## Polypore
-
-### Inventory & Loan Management for Film Gear (MVP)
+[![Stars](https://img.shields.io/github/stars/myceliumAI/polypore?style=social)](https://github.com/myceliumAI/polypore)
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](./LICENSE)
+[![Issues](https://img.shields.io/github/issues/myceliumAI/polypore)](https://github.com/myceliumAI/polypore/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/myceliumAI/polypore)](https://github.com/myceliumAI/polypore/commits/main)
 
 </div>
 
 ---
 
-## 🌟 What is Polypore?
+## 🌟 What is polypore?
 
-Polypore is a tiny web app to manage your gear inventory for shoots. Declare items, create shoots, book loans with availability checks, and see what’s available right now.
+polypore is a lightweight web app to manage your film gear inventory and loans. Declare items, plan shoots, reserve equipment with availability checks, and know what’s available right now.
 
-## ✅ Features (MVP)
-
-| Feature | Description |
-|:--|:--|
-| Inventory | Add items with name, type (camera/light/cable/other), total stock |
-| Shoots | Create shoots with name, location, start/end dates |
-| Loans | Reserve items for a shoot; prevents overbooking |
-| Dashboard | Availability “now” per item (total vs available) |
-
-## 🚀 Quickstart
-
-- Prerequisites: Docker + Docker Compose
-
-```bash
-cd app
-make setup   # installs deps + creates .env files (front/back)
-make up      # builds & starts front+back
-```
-
-- Frontend: `http://localhost:5173`
-- API docs: `http://localhost:8000/docs`
+- 📦 Inventory: manage items (camera/light/cable/other), stock counts
+- 🎬 Shoots: plan with name, location, start/end dates
+- 📅 Reservations: reserve items per shoot; prevents overbooking
+- 📊 Dashboard: see current availability per item
 
 ---
 
-### 🙌 Contributing
-Issues and ideas welcome. This is a POC—keep it simple, ship often. 
+## 🤝 Contributing
+We welcome issues, feature requests, and PRs. Please open an issue to discuss your idea, or check out our [contribution guidelines](CONTRIBUTING.md).
