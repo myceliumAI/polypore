@@ -6,7 +6,7 @@
 
 # Polypore
 
-### Inventory & Loan Management for Film Gear
+### Less chaos more shoots
 
 [![Stars](https://img.shields.io/github/stars/myceliumAI/polypore?style=social)](https://github.com/myceliumAI/polypore)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](./LICENSE)
