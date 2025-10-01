@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .db.core import create_db_and_tables, auto_return_task
-from .routers import items, shoots, loans, dashboard
+from .routers import items, shoots, bookings, dashboard
 
 
 @asynccontextmanager
@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
         print("💡 Shutdown background tasks")
 
 
-app = FastAPI(title="Polypore Inventory API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Polypore Stock API", version="0.1.0", lifespan=lifespan)
 
 # CORS
 app.add_middleware(
@@ -55,5 +55,5 @@ async def http_exception_handler(
 # Routers
 app.include_router(items.router, prefix="/items")
 app.include_router(shoots.router, prefix="/shoots")
-app.include_router(loans.router, prefix="/loans")
+app.include_router(bookings.router, prefix="/bookings")
 app.include_router(dashboard.router, prefix="/dashboard")

@@ -1,7 +1,7 @@
 [project]
 name = "polypore-backend"
 version = "0.1.0"
-description = "Polypore inventory API"
+description = "Polypore stock API"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi==0.117.1",

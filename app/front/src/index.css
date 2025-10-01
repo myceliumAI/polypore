@@ -31,24 +31,7 @@ body {
   );
 }
 
-/* Cards */
-.card {
-  @apply rounded-xl border border-neutral-200/70 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 backdrop-blur shadow-sm;
-}
-
-/* Buttons */
-.btn {
-  @apply inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors;
-}
-.btn-primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800;
-}
-.btn-danger {
-  @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
-}
-.btn-ghost {
-  @apply bg-transparent text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800;
-}
+/* Note: Utilisez les composants <Button>, <Card>, etc. au lieu de ces classes CSS */
 
 /* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
@@ -69,4 +52,162 @@ body {
 /* Tooltip */
 .tooltip {
   @apply rounded-md border bg-white dark:bg-neutral-900 px-3 py-2 text-xs shadow-xl text-neutral-900 dark:text-neutral-100;
+}
+
+/* Date Range Picker customization */
+.date-range-picker-wrapper {
+  padding: 1.5rem;
+}
+
+.date-range-picker-wrapper .rdrCalendarWrapper {
+  background: transparent;
+  color: inherit;
+}
+
+.date-range-picker-wrapper .rdrMonthAndYearWrapper {
+  padding-bottom: 1rem;
+}
+
+.date-range-picker-wrapper .rdrMonthAndYearPickers select {
+  @apply text-neutral-900 dark:text-neutral-100 bg-transparent font-semibold text-base;
+}
+
+.date-range-picker-wrapper .rdrMonthPicker,
+.date-range-picker-wrapper .rdrYearPicker {
+  margin: 0 0.5rem;
+}
+
+.date-range-picker-wrapper .rdrNextPrevButton {
+  @apply bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors;
+  background: transparent;
+}
+
+.date-range-picker-wrapper .rdrPprevButton i {
+  border-color: transparent currentColor transparent transparent;
+}
+
+.date-range-picker-wrapper .rdrNextButton i {
+  border-color: transparent transparent transparent currentColor;
+}
+
+.date-range-picker-wrapper .rdrWeekDay {
+  @apply text-neutral-500 dark:text-neutral-400 font-semibold;
+  color: inherit;
+}
+
+.date-range-picker-wrapper .rdrDay {
+  @apply text-neutral-900 dark:text-neutral-100;
+}
+
+.date-range-picker-wrapper .rdrDayNumber span {
+  @apply text-neutral-900 dark:text-neutral-100;
+  color: inherit;
+}
+
+.date-range-picker-wrapper .rdrDayToday .rdrDayNumber span::after {
+  background: linear-gradient(to right, #7c3aed, #3b82f6);
+}
+
+.date-range-picker-wrapper .rdrDayPassive .rdrDayNumber span {
+  @apply text-neutral-400 dark:text-neutral-600;
+}
+
+.date-range-picker-wrapper .rdrDayDisabled {
+  @apply text-neutral-400 dark:text-neutral-600 opacity-30;
+}
+
+.date-range-picker-wrapper .rdrInRange {
+  background: #ddd6fe !important;
+}
+
+.dark .date-range-picker-wrapper .rdrInRange {
+  background: #6b21a8 !important;
+}
+
+.date-range-picker-wrapper .rdrInRange .rdrDayNumber span {
+  color: #4c1d95 !important;
+  font-weight: 600 !important;
+}
+
+.dark .date-range-picker-wrapper .rdrInRange .rdrDayNumber span {
+  color: #f3e8ff !important;
+}
+
+.date-range-picker-wrapper .rdrStartEdge,
+.date-range-picker-wrapper .rdrEndEdge {
+  background: #8b5cf6 !important;
+  border: none !important;
+}
+
+.dark .date-range-picker-wrapper .rdrStartEdge,
+.dark .date-range-picker-wrapper .rdrEndEdge {
+  background: #7c3aed !important;
+}
+
+.date-range-picker-wrapper .rdrStartEdge .rdrDayNumber span,
+.date-range-picker-wrapper .rdrEndEdge .rdrDayNumber span {
+  color: white !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.date-range-picker-wrapper .rdrDayStartOfMonth .rdrInRange,
+.date-range-picker-wrapper .rdrDayEndOfMonth .rdrInRange,
+.date-range-picker-wrapper .rdrDayStartOfWeek .rdrInRange,
+.date-range-picker-wrapper .rdrDayEndOfWeek .rdrInRange {
+  background: #ddd6fe !important;
+}
+
+.dark .date-range-picker-wrapper .rdrDayStartOfMonth .rdrInRange,
+.dark .date-range-picker-wrapper .rdrDayEndOfMonth .rdrInRange,
+.dark .date-range-picker-wrapper .rdrDayStartOfWeek .rdrInRange,
+.dark .date-range-picker-wrapper .rdrDayEndOfWeek .rdrInRange {
+  background: #6b21a8 !important;
+}
+
+/* Preview uses the same styles as final selection */
+.date-range-picker-wrapper .rdrDayInPreview {
+  background: #ddd6fe !important;
+  border: none !important;
+}
+
+.dark .date-range-picker-wrapper .rdrDayInPreview {
+  background: #6b21a8 !important;
+}
+
+.date-range-picker-wrapper .rdrDayInPreview .rdrDayNumber span {
+  color: #4c1d95 !important;
+  font-weight: 600 !important;
+}
+
+.dark .date-range-picker-wrapper .rdrDayInPreview .rdrDayNumber span {
+  color: #f3e8ff !important;
+}
+
+/* Start and End edges (both preview and final) */
+.date-range-picker-wrapper .rdrDayStartPreview,
+.date-range-picker-wrapper .rdrDayEndPreview {
+  background: #8b5cf6 !important;
+  border: none !important;
+}
+
+.dark .date-range-picker-wrapper .rdrDayStartPreview,
+.dark .date-range-picker-wrapper .rdrDayEndPreview {
+  background: #7c3aed !important;
+}
+
+.date-range-picker-wrapper .rdrDayStartPreview .rdrDayNumber span,
+.date-range-picker-wrapper .rdrDayEndPreview .rdrDayNumber span {
+  color: white !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dark .date-range-picker-wrapper .rdrCalendarWrapper {
+  background: transparent;
+  color: #e5e5e5;
+}
+
+.dark .date-range-picker-wrapper .rdrMonthAndYearPickers select {
+  color: #e5e5e5;
 }

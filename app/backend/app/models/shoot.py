@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .loan import Loan
+    from .booking import Booking
 
 
 class Shoot(SQLModel, table=True):
@@ -19,4 +19,4 @@ class Shoot(SQLModel, table=True):
     end_date: datetime
 
     # Relationships
-    loans: list["Loan"] = Relationship(back_populates="shoot")
+    bookings: list["Booking"] = Relationship(back_populates="shoot")

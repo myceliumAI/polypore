@@ -2,8 +2,8 @@ from pydantic import Field, ConfigDict
 from .base import BaseSchema
 
 
-class LoanCreate(BaseSchema):
-    """Payload to create a new loan (reservation) for a given shoot and item."""
+class BookingCreate(BaseSchema):
+    """Payload to create a new booking (reservation) for a given shoot and item."""
 
     item_id: int = Field(
         ...,
@@ -20,7 +20,7 @@ class LoanCreate(BaseSchema):
     quantity: int = Field(
         ...,
         ge=1,
-        description="Quantity to loan.",
+        description="Quantity to book.",
         examples=[1, 2],
     )
 
@@ -33,8 +33,8 @@ class LoanCreate(BaseSchema):
     )
 
 
-class LoanUpdate(BaseSchema):
-    """Partial update for a loan (quantity only in this POC)."""
+class BookingUpdate(BaseSchema):
+    """Partial update for a booking (quantity only in this POC)."""
 
     quantity: int | None = Field(
         default=None,
@@ -46,15 +46,15 @@ class LoanUpdate(BaseSchema):
     model_config = ConfigDict(json_schema_extra={"examples": [{"quantity": 2}]})
 
 
-class LoanRead(BaseSchema):
+class BookingRead(BaseSchema):
     """
-    Response schema for a loan.
+    Response schema for a booking.
 
-    :param int id: Loan ID
+    :param int id: Booking ID
     :param int item_id: Item ID
     :param int shoot_id: Shoot ID
     :param int quantity: Quantity
-    :return LoanRead: Loan representation
+    :return BookingRead: Booking representation
     """
 
     id: int = Field(

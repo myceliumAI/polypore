@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
-    from .loan import Loan
+    from .booking import Booking
 
 
 class ItemType(str, Enum):
@@ -20,7 +20,7 @@ class ItemType(str, Enum):
 
 class Item(SQLModel, table=True):
     """
-    An item in the inventory.
+    An item in the stock.
     """
 
     # Fields
@@ -31,4 +31,4 @@ class Item(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    loans: list["Loan"] = Relationship(back_populates="item")
+    bookings: list["Booking"] = Relationship(back_populates="item")

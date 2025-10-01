@@ -3,7 +3,7 @@ from datetime import datetime, timezone, timedelta, date
 from sqlmodel import Session, select
 
 from ..models.item import Item
-from ..models.loan import Loan
+from ..models.booking import Booking
 from ..models.shoot import Shoot
 from ..schemas.dashboard import (
     ItemAvailability,
@@ -61,17 +61,17 @@ def reserved_quantity_for_item(
     :param datetime end: End of requested period
     :return int: Reserved quantity
     """
-    loans: list[Loan] = session.exec(
-        select(Loan).where(Loan.item_id == item_id, Loan.returned_at.is_(None))
+    bookings: list[Booking] = session.exec(
+        select(Booking).where(Booking.item_id == item_id, Booking.returned_at.is_(None))
     ).all()
     return sum(
-        loan.quantity
-        for loan in loans
-        if periods_overlap(loan.start_date, loan.end_date, start, end)
+        booking.quantity
+        for booking in bookings
+        if periods_overlap(booking.start_date, booking.end_date, start, end)
     )
 
 
-def compute_inventory_rows(session: Session, when: datetime) -> list[ItemAvailability]:
+def compute_stock_rows(session: Session, when: datetime) -> list[ItemAvailability]:
     """
     Build dashboard rows of availability at a moment in time.
 
@@ -81,17 +81,21 @@ def compute_inventory_rows(session: Session, when: datetime) -> list[ItemAvailab
     """
     when_u = to_utc_aware(when)
     items: list[Item] = session.exec(select(Item)).all()
-    loans: list[Loan] = session.exec(
-        select(Loan).where(Loan.returned_at.is_(None))
+    bookings: list[Booking] = session.exec(
+        select(Booking).where(Booking.returned_at.is_(None))
     ).all()
 
     rows: list[ItemAvailability] = []
     for item in items:
         active_reserved = sum(
-            loan.quantity
-            for loan in loans
-            if loan.item_id == item.id
-            and (to_utc_aware(loan.start_date) <= when_u <= to_utc_aware(loan.end_date))
+            booking.quantity
+            for booking in bookings
+            if booking.item_id == item.id
+            and (
+                to_utc_aware(booking.start_date)
+                <= when_u
+                <= to_utc_aware(booking.end_date)
+            )
         )
         available = max(item.total_stock - active_reserved, 0)
         rows.append(
@@ -115,7 +119,7 @@ def compute_timeline(session: Session, days: int = 90) -> list[ItemTimeline]:
     """
     today = datetime.now(timezone.utc).date()
     items: list[Item] = session.exec(select(Item)).all()
-    loans: list[Loan] = session.exec(select(Loan)).all()
+    bookings: list[Booking] = session.exec(select(Booking)).all()
     shoots: dict[int, Shoot] = {s.id: s for s in session.exec(select(Shoot)).all()}
 
     timelines: list[ItemTimeline] = []
@@ -126,25 +130,25 @@ def compute_timeline(session: Session, days: int = 90) -> list[ItemTimeline]:
             day_start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
             day_end = day_start + timedelta(days=1)
 
-            day_loans = [
-                ln
-                for ln in loans
-                if ln.item_id == item.id
-                and periods_overlap(ln.start_date, ln.end_date, day_start, day_end)
+            day_bookings = [
+                bk
+                for bk in bookings
+                if bk.item_id == item.id
+                and periods_overlap(bk.start_date, bk.end_date, day_start, day_end)
             ]
-            total_reserved = sum(ln.quantity for ln in day_loans)
+            total_reserved = sum(bk.quantity for bk in day_bookings)
             available = max(item.total_stock - total_reserved, 0)
             breakdown = [
                 DayBreakdown(
-                    shoot_id=ln.shoot_id,
+                    shoot_id=bk.shoot_id,
                     shoot_name=(
-                        shoots.get(ln.shoot_id).name
-                        if shoots.get(ln.shoot_id)
-                        else str(ln.shoot_id)
+                        shoots.get(bk.shoot_id).name
+                        if shoots.get(bk.shoot_id)
+                        else str(bk.shoot_id)
                     ),
-                    quantity=ln.quantity,
+                    quantity=bk.quantity,
                 )
-                for ln in day_loans
+                for bk in day_bookings
             ]
             series.append(
                 DayAvailability(

@@ -167,7 +167,7 @@ def update_shoot(shoot_id: int, payload: ShootUpdate) -> ShootRead:
     "/{shoot_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete shoot",
-    description="Delete a shoot and cascade-delete its loans.",
+    description="Delete a shoot and cascade-delete its bookings.",
     responses={
         204: {"description": "Shoot deleted"},
         500: {
@@ -193,7 +193,7 @@ def delete_shoot(shoot_id: int) -> None:
             raise
         except Exception as e:
             raise err_internal(str(e))
-        print("✅ Deleted shoot and", deleted, "related loan(s)")
+        print(" ✅ Deleted shoot and", deleted, "related booking(s)")
         return None
 
 

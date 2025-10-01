@@ -15,6 +15,9 @@ lint:
 up:
 	$(COMPOSE) up -d --build
 
+dev:
+	$(MAKE) -C front dev & $(MAKE) -C backend dev & wait
+
 down:
 	$(COMPOSE) down
 

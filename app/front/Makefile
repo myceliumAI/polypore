@@ -13,10 +13,10 @@ build:
 	$(PKG) build
 
 fmt:
-	$(PKG) format
+	$(PKG) run format
 
 lint:
-	$(PKG) lint
+	$(PKG) run lint
 
 clean:
 	rm -rf node_modules dist .vite .eslintcache 

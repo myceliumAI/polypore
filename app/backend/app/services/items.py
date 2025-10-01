@@ -6,7 +6,7 @@ from ..models.item import Item, ItemType
 
 def list_items(session: Session) -> List[Item]:
     """
-    Return all inventory items.
+    Return all stock items.
 
     :param Session session: Active database session.
     :return List[Item]: List of items.
@@ -16,7 +16,7 @@ def list_items(session: Session) -> List[Item]:
 
 def create_item(session: Session, name: str, type_: ItemType, total_stock: int) -> Item:
     """
-    Create a new inventory item.
+    Create a new stock item.
 
     :param Session session: Active database session.
     :param str name: Human-readable item name.
@@ -41,7 +41,7 @@ def update_item(
     total_stock: int | None,
 ) -> Item:
     """
-    Partially update an inventory item.
+    Partially update a stock item.
 
     :param Session session: Active database session.
     :param int item_id: Target item identifier.

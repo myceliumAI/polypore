@@ -11,7 +11,14 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@types": ["./src/types"],
+      "@lib/*": ["./src/lib/*"]
+    }
   },
   "include": ["src"]
 }

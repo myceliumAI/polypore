@@ -19,7 +19,7 @@ router = APIRouter(tags=["Items"])
     response_model=ItemRead,
     status_code=status.HTTP_201_CREATED,
     summary="Create item",
-    description="Create a new inventory item.",
+    description="Create a new stock item.",
     response_description="Item created",
     responses={
         201: {"content": {"application/json": {"example": ItemRead.example() or {}}}},
@@ -43,7 +43,7 @@ router = APIRouter(tags=["Items"])
 )
 def create_item(payload: ItemCreate) -> ItemRead:
     """
-    Create a new inventory item.
+    Create a new stock item.
 
     :param ItemCreate payload: New item data
     :return ItemRead: Created item
@@ -68,7 +68,7 @@ def create_item(payload: ItemCreate) -> ItemRead:
     response_model=list[ItemRead],
     status_code=status.HTTP_200_OK,
     summary="List items",
-    description="List all inventory items.",
+    description="List all stock items.",
     response_description="List of items",
     responses={
         200: {"content": {"application/json": {"example": [ItemRead.example() or {}]}}},

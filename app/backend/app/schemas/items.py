@@ -4,7 +4,7 @@ from .base import BaseSchema
 
 
 class ItemCreate(BaseSchema):
-    """Payload to create a new inventory item."""
+    """Payload to create a new stock item."""
 
     name: str = Field(
         ...,
@@ -19,7 +19,7 @@ class ItemCreate(BaseSchema):
     total_stock: int = Field(
         ...,
         ge=0,
-        description="Total count owned in inventory.",
+        description="Total count owned in stock.",
         examples=[1, 3, 10],
     )
 
@@ -33,7 +33,7 @@ class ItemCreate(BaseSchema):
 
 
 class ItemUpdate(BaseSchema):
-    """Partial update for an inventory item."""
+    """Partial update for a stock item."""
 
     name: str | None = Field(
         default=None,

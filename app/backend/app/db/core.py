@@ -21,7 +21,7 @@ def create_db_and_tables() -> None:
     # Ensure models are imported so relationship string references resolve in mapper
     from ..models import item as _item  # noqa: F401
     from ..models import shoot as _shoot  # noqa: F401
-    from ..models import loan as _loan  # noqa: F401
+    from ..models import booking as _booking  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
 
@@ -38,7 +38,7 @@ def get_session() -> Iterator[Session]:
 
 
 class _AutoReturnTask:
-    """Background loop to auto-return overdue loans."""
+    """Background loop to auto-return overdue bookings."""
 
     def __init__(self, interval_seconds: int = 30) -> None:
         """
@@ -54,23 +54,23 @@ class _AutoReturnTask:
         """
         Run the auto-return task.
         """
-        from ..models.loan import Loan
+        from ..models.booking import Booking
 
         while not self._stop_event.is_set():
             try:
                 now = datetime.now(timezone.utc)
                 with get_session() as session:
                     overdue = session.exec(
-                        select(Loan).where(Loan.end_date <= now)
+                        select(Booking).where(Booking.end_date <= now)
                     ).all()
                     deleted = 0
-                    for loan in overdue:
-                        session.delete(loan)
+                    for booking in overdue:
+                        session.delete(booking)
                         deleted += 1
                     if deleted:
                         session.commit()
                         print(
-                            f"✅ Auto-canceled {deleted} loan(s) at {now.isoformat()}"
+                            f" ✅ Auto-canceled {deleted} booking(s) at {now.isoformat()}"
                         )
             except Exception as exc:  # noqa: BLE001
                 print(f"⚠️ Auto-cancel task error: {exc}")

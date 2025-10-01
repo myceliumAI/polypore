@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlmodel import Session, select
 
 from ..models.shoot import Shoot
-from ..models.loan import Loan
+from ..models.booking import Booking
 from ..models.item import Item
 
 
@@ -85,26 +85,26 @@ def update_shoot(
 
 def delete_shoot(session: Session, shoot_id: int) -> int:
     """
-    Delete a shoot and cascade-delete all related loans.
+    Delete a shoot and cascade-delete all related bookings.
 
     :param Session session: Active database session.
     :param int shoot_id: Target shoot identifier.
-    :return int: Number of deleted loans.
+    :return int: Number of deleted bookings.
     """
     shoot = session.get(Shoot, shoot_id)
     if not shoot:
         return 0
-    loans = session.exec(select(Loan).where(Loan.shoot_id == shoot_id)).all()
-    for ln in loans:
-        session.delete(ln)
+    bookings = session.exec(select(Booking).where(Booking.shoot_id == shoot_id)).all()
+    for bk in bookings:
+        session.delete(bk)
     session.delete(shoot)
     session.commit()
-    return len(loans)
+    return len(bookings)
 
 
 def build_packing_list_csv(session: Session, shoot_id: int) -> str:
     """
-    Build a CSV packing list for a shoot by aggregating item quantities across loans.
+    Build a CSV packing list for a shoot by aggregating item quantities across bookings.
 
     :param Session session: Active database session.
     :param int shoot_id: Target shoot identifier.
@@ -113,10 +113,10 @@ def build_packing_list_csv(session: Session, shoot_id: int) -> str:
     shoot = session.get(Shoot, shoot_id)
     if not shoot:
         raise KeyError("shoot not found")
-    loans = session.exec(select(Loan).where(Loan.shoot_id == shoot_id)).all()
+    bookings = session.exec(select(Booking).where(Booking.shoot_id == shoot_id)).all()
     qty_by_item: Dict[int, int] = {}
-    for ln in loans:
-        qty_by_item[ln.item_id] = qty_by_item.get(ln.item_id, 0) + ln.quantity
+    for bk in bookings:
+        qty_by_item[bk.item_id] = qty_by_item.get(bk.item_id, 0) + bk.quantity
     if not qty_by_item:
         return "item_id,item_name,item_type,quantity\n"
     items = session.exec(

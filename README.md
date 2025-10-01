@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="static/logo.png" alt="Polypore logo" width="120"/>
+  <img src="app/front/public/logo.png" alt="Polypore logo" width="120"/>
 </p>
 
 <div align="center">
@@ -19,11 +19,11 @@
 
 ## 🌟 What is polypore?
 
-polypore is a lightweight web app to manage your film gear inventory and loans. Declare items, plan shoots, reserve equipment with availability checks, and know what’s available right now.
+polypore is a lightweight web app to manage your film gear stock and bookings. Declare items, plan shoots, reserve equipment with availability checks, and know what's available right now.
 
-- 📦 Inventory: manage items (camera/light/cable/other), stock counts
+- 📦 Stock: manage items (camera/light/cable/other), stock counts
 - 🎬 Shoots: plan with name, location, start/end dates
-- 📅 Reservations: reserve items per shoot; prevents overbooking
+- 🔗 Bookings: book items per shoot; prevents overbooking
 - 📊 Dashboard: see current availability per item
 
 ---

@@ -9,7 +9,7 @@ class ErrorCode(StrEnum):
     INVALID_PAYLOAD = "INVALID_PAYLOAD"
     INVALID_DATES = "INVALID_DATES"
     NO_AVAILABILITY = "NO_AVAILABILITY"
-    LOAN_ALREADY_STARTED = "LOAN_ALREADY_STARTED"
+    BOOKING_ALREADY_STARTED = "BOOKING_ALREADY_STARTED"
     INTERNAL_ERROR = "INTERNAL_ERROR"
 
 
@@ -43,7 +43,10 @@ class ApiError(BaseSchema):
                     "detail": " ❌ No availability for requested period",
                     "code": "NO_AVAILABILITY",
                 },
-                {"detail": " ❌ Loan already started", "code": "LOAN_ALREADY_STARTED"},
+                {
+                    "detail": " ❌ Booking already started",
+                    "code": "BOOKING_ALREADY_STARTED",
+                },
                 {"detail": " ❌ Internal server error", "code": "INTERNAL_ERROR"},
             ]
         }
@@ -63,7 +66,7 @@ class ApiError(BaseSchema):
             ErrorCode.INVALID_PAYLOAD: " ❌ Invalid payload",
             ErrorCode.INVALID_DATES: " ❌ Invalid dates: end_date must be after start_date",
             ErrorCode.NO_AVAILABILITY: " ❌ No availability for requested period",
-            ErrorCode.LOAN_ALREADY_STARTED: " ❌ Loan already started",
+            ErrorCode.BOOKING_ALREADY_STARTED: " ❌ Booking already started",
             ErrorCode.INTERNAL_ERROR: " ❌ Internal server error",
         }
         message = detail if detail is not None else defaults.get(code, " ❌ Error")

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { api, getErrorMessage } from "../api";
+import { Button, Card } from "../components";
 
 // Types matching backend endpoints
-
 type DayBreakdown = { shoot_id: number; shoot_name: string; quantity: number };
 
 type DayAvailability = {
@@ -34,8 +34,8 @@ type Row = {
 type Mode = "items" | "types";
 
 const DAYS = 90;
-const CELL_PX = 36; // width per day cell (px)
-const STICKY_COL_PX = 240; // first column min width (px)
+const CELL_PX = 36;
+const STICKY_COL_PX = 240;
 
 function cellColor(available: number, total: number): string {
   if (total <= 0) return "bg-neutral-300 dark:bg-neutral-700";
@@ -99,159 +99,189 @@ export function Dashboard() {
       .finally(() => setLoading(false));
   }, [mode]);
 
-  const allDates = useMemo(
-    () => (rows.length === 0 ? [] : rows[0].series.map((d) => d.date)),
-    [rows],
-  );
-  const minWidthPx = STICKY_COL_PX + allDates.length * CELL_PX;
+  const dates = rows.length > 0 ? rows[0].series.map((d) => d.date) : [];
+
+  const showTooltip = (
+    e: React.MouseEvent,
+    day: DayAvailability,
+    label: string,
+  ) => {
+    setTooltip({
+      x: e.clientX + 10,
+      y: e.clientY - 10,
+      lines: formatTooltip(day, label),
+    });
+  };
+
+  const hideTooltip = () => setTooltip(null);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Overview</h1>
-        <div className="flex items-center gap-2 text-sm">
-          <button
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <Button
             onClick={() => setMode("items")}
-            className={`btn ${mode === "items" ? "btn-primary" : "btn-ghost"}`}
+            variant={mode === "items" ? "primary" : "ghost"}
           >
             Items
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setMode("types")}
-            className={`btn ${mode === "types" ? "btn-primary" : "btn-ghost"}`}
+            variant={mode === "types" ? "primary" : "ghost"}
           >
             Types
-          </button>
-          <div className="text-neutral-500 ml-3">Horizon: {DAYS} days</div>
+          </Button>
         </div>
       </div>
 
-      {loading && <div>Loading…</div>}
-      {error && <div className="text-red-600">{error}</div>}
-
-      {!loading && !error && (
-        <div className="card p-0">
-          {/* Only this inner container scrolls horizontally */}
-          <div
-            className="relative max-w-full overflow-x-auto custom-scrollbar"
-            style={{ overscrollBehaviorX: "contain" }}
-          >
-            <div className="inline-block" style={{ minWidth: minWidthPx }}>
-              <table className="w-full text-sm align-top">
-                <thead>
-                  <tr className="text-left whitespace-nowrap">
-                    <th
-                      className="py-3 pr-8 sticky left-0 bg-white dark:bg-neutral-900 z-10 text-neutral-700 dark:text-neutral-200"
-                      style={{ minWidth: STICKY_COL_PX }}
-                    >
-                      {mode === "items" ? "Item" : "Type"}
-                    </th>
-                    {allDates.map((d) => (
-                      <th
-                        key={d}
-                        className="py-3 px-2 text-[11px] font-medium whitespace-nowrap text-neutral-500"
-                        style={{ width: CELL_PX }}
-                      >
-                        {d.slice(5)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200/60 dark:divide-neutral-800">
-                  {rows.map((row) => (
-                    <tr
-                      key={row.key}
-                      className="bg-white/40 dark:bg-neutral-900/40 whitespace-nowrap"
-                    >
-                      <td
-                        className="py-3 pr-8 sticky left-0 bg-white dark:bg-neutral-900 z-10"
-                        style={{ minWidth: STICKY_COL_PX }}
-                      >
-                        <div className="font-medium capitalize text-neutral-900 dark:text-neutral-100">
-                          {row.label}
-                        </div>
-                        {row.sublabel && (
-                          <div className="text-xs text-neutral-500 capitalize">
-                            {row.sublabel}
-                          </div>
-                        )}
-                      </td>
-                      {row.series.map((day) => (
-                        <td
-                          key={`${row.key}-${day.date}`}
-                          className="py-2 px-2"
-                          style={{ width: CELL_PX }}
-                        >
-                          <div
-                            onMouseEnter={(e) => {
-                              const rect = (
-                                e.target as HTMLElement
-                              ).getBoundingClientRect();
-                              setTooltip({
-                                x: rect.left + rect.width + 10,
-                                y: rect.top + window.scrollY + rect.height + 10,
-                                lines: formatTooltip(day, row.label),
-                              });
-                            }}
-                            onMouseMove={(e) => {
-                              setTooltip((prev) =>
-                                prev
-                                  ? {
-                                      ...prev,
-                                      x: e.clientX + 12,
-                                      y: window.scrollY + e.clientY + 12,
-                                    }
-                                  : prev,
-                              );
-                            }}
-                            onMouseLeave={() => setTooltip(null)}
-                            className={`h-6 w-6 rounded-md ${cellColor(day.available, day.total)} cursor-help ring-1 ring-white/50 dark:ring-neutral-900/60 hover:scale-105 transition-transform`}
-                            aria-label={`${day.date}: ${day.available}/${day.total}`}
-                            role="img"
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm text-red-800 dark:text-red-200">
+          ❌ {error}
         </div>
       )}
 
-      <div className="flex items-center gap-4 text-sm text-neutral-700 dark:text-neutral-300">
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-red-500" /> 0
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-orange-400" />{" "}
-          low
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-yellow-300" />{" "}
-          medium
-        </span>
-        <span className="inline-flex items-center gap-1">
-          <span className="inline-block h-3.5 w-3.5 rounded-sm bg-green-500" />{" "}
-          high
-        </span>
-      </div>
+      {/* Loading state */}
+      {loading && (
+        <Card>
+          <div className="flex items-center justify-center py-12">
+            <svg
+              className="animate-spin h-8 w-8 text-purple-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </div>
+        </Card>
+      )}
 
+      {/* Timeline */}
+      {!loading && rows.length > 0 && (
+        <Card>
+          <div className="overflow-auto custom-scrollbar">
+            <div className="min-w-max">
+              {/* Header row */}
+              <div className="flex border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50 sticky top-0 z-10">
+                <div
+                  className="flex-shrink-0 px-4 py-3 font-medium text-xs uppercase text-neutral-700 dark:text-neutral-300 sticky left-0 bg-neutral-50 dark:bg-neutral-900/50 z-20"
+                  style={{ width: STICKY_COL_PX }}
+                >
+                  {mode === "items" ? "Item / Type" : "Type"}
+                </div>
+                {dates.map((date) => (
+                  <div
+                    key={date}
+                    className="flex-shrink-0 px-2 py-3 text-center text-xs text-neutral-600 dark:text-neutral-400"
+                    style={{ width: CELL_PX }}
+                  >
+                    {date.slice(5)}
+                  </div>
+                ))}
+              </div>
+
+              {/* Data rows */}
+              {rows.map((row) => (
+                <div
+                  key={row.key}
+                  className="flex border-b border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors"
+                >
+                  <div
+                    className="flex-shrink-0 px-4 py-3 flex flex-col justify-center sticky left-0 bg-white dark:bg-neutral-900 z-10 border-r border-neutral-200 dark:border-neutral-800"
+                    style={{ width: STICKY_COL_PX }}
+                  >
+                    <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                      {row.label}
+                    </span>
+                    {row.sublabel && (
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {row.sublabel}
+                      </span>
+                    )}
+                  </div>
+                  {row.series.map((day, i) => (
+                    <div
+                      key={i}
+                      className={`flex-shrink-0 cursor-pointer ring-1 ring-neutral-200 dark:ring-neutral-700 hover:ring-2 hover:ring-purple-500 transition-all ${cellColor(
+                        day.available,
+                        day.total,
+                      )}`}
+                      style={{ width: CELL_PX, height: 48 }}
+                      onMouseEnter={(e) => showTooltip(e, day, row.label)}
+                      onMouseLeave={hideTooltip}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800 flex items-center gap-6 text-xs">
+            <span className="font-medium text-neutral-700 dark:text-neutral-300">
+              Legend:
+            </span>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-green-500 ring-1 ring-neutral-300 dark:ring-neutral-600" />
+              <span className="text-neutral-600 dark:text-neutral-400">
+                67%+ available
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-yellow-300 ring-1 ring-neutral-300 dark:ring-neutral-600" />
+              <span className="text-neutral-600 dark:text-neutral-400">
+                34–66% available
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-orange-400 ring-1 ring-neutral-300 dark:ring-neutral-600" />
+              <span className="text-neutral-600 dark:text-neutral-400">
+                1–33% available
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-md bg-red-500 ring-1 ring-neutral-300 dark:ring-neutral-600" />
+              <span className="text-neutral-600 dark:text-neutral-400">
+                Fully booked
+              </span>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Tooltip */}
       {tooltip && (
         <div
-          className="fixed z-50 max-w-xs tooltip"
-          style={{ top: tooltip.y, left: tooltip.x }}
+          className="fixed z-50 px-4 py-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl text-xs max-w-xs pointer-events-none"
+          style={{ left: tooltip.x, top: tooltip.y }}
         >
-          <div className="font-medium mb-1">{tooltip.lines[0]}</div>
-          <div className="mb-1 text-neutral-600 dark:text-neutral-300">
-            {tooltip.lines[1]}
-          </div>
-          <ul className="list-disc pl-4">
-            {tooltip.lines.slice(2).map((l, i) => (
-              <li key={i}>{l.replace(/^•\s*/, "")}</li>
-            ))}
-          </ul>
+          {tooltip.lines.map((line, i) => (
+            <div
+              key={i}
+              className={`${
+                i === 0
+                  ? "font-semibold text-neutral-900 dark:text-neutral-100 mb-1"
+                  : "text-neutral-700 dark:text-neutral-300"
+              }`}
+            >
+              {line}
+            </div>
+          ))}
         </div>
       )}
     </div>

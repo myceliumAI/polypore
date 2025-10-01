@@ -8,7 +8,7 @@ from ..db.core import get_session
 from ..schemas.dashboard import ItemAvailability, ItemTimeline, TypeTimeline
 from ..schemas.errors import ApiError, ErrorCode
 from ..services.availability import (
-    compute_inventory_rows,
+    compute_stock_rows,
     compute_timeline,
     compute_type_timeline,
 )
@@ -17,10 +17,10 @@ router = APIRouter(tags=["Dashboard"])
 
 
 @router.get(
-    "/inventory",
+    "/stock",
     response_model=list[ItemAvailability],
     status_code=status.HTTP_200_OK,
-    summary="Inventory snapshot",
+    summary="Stock snapshot",
     description="Return current availability per item (now).",
     response_description="List of items with availability now",
     responses={
@@ -41,7 +41,7 @@ router = APIRouter(tags=["Dashboard"])
         },
     },
 )
-def inventory_dashboard() -> list[ItemAvailability]:
+def stock_dashboard() -> list[ItemAvailability]:
     """
     Current per-item availability snapshot.
 
@@ -49,7 +49,7 @@ def inventory_dashboard() -> list[ItemAvailability]:
     """
     now = datetime.now(timezone.utc)
     with get_session() as session:
-        return compute_inventory_rows(session, now)
+        return compute_stock_rows(session, now)
 
 
 @router.get(

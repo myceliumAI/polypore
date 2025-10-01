@@ -5,9 +5,9 @@ from .item import Item
 from .shoot import Shoot
 
 
-class Loan(SQLModel, table=True):
+class Booking(SQLModel, table=True):
     """
-    A loan of an item for a shoot.
+    A booking of an item for a shoot.
     """
 
     # Fields
@@ -20,5 +20,5 @@ class Loan(SQLModel, table=True):
     returned_at: datetime | None = None
 
     # Relationships
-    item: "Item" = Relationship(back_populates="loans")
-    shoot: "Shoot" = Relationship(back_populates="loans")
+    item: "Item" = Relationship(back_populates="bookings")
+    shoot: "Shoot" = Relationship(back_populates="bookings")

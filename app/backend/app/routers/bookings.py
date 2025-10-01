@@ -1,30 +1,32 @@
 from fastapi import APIRouter, Response, status
 
 from ..db.core import get_session
-from ..services import loans as svc
-from ..schemas.loans import LoanCreate, LoanUpdate, LoanRead
+from ..services import bookings as svc
+from ..schemas.bookings import BookingCreate, BookingUpdate, BookingRead
 from ..schemas.errors import ApiError, ErrorCode
 from ..exceptions.api import (
     err_not_found,
     err_invalid_payload,
     err_no_availability,
-    err_loan_started,
+    err_booking_started,
     err_internal,
     ApiException,
 )
 
-router = APIRouter(tags=["Loans"])
+router = APIRouter(tags=["Bookings"])
 
 
 @router.post(
     "/",
-    response_model=LoanRead,
+    response_model=BookingRead,
     status_code=status.HTTP_201_CREATED,
-    summary="Create loan",
-    description="Create a loan for an item on a given shoot with availability checks.",
-    response_description="Loan created",
+    summary="Create booking",
+    description="Create a booking for an item on a given shoot with availability checks.",
+    response_description="Booking created",
     responses={
-        201: {"content": {"application/json": {"example": LoanRead.example() or {}}}},
+        201: {
+            "content": {"application/json": {"example": BookingRead.example() or {}}}
+        },
         400: {
             "description": "No availability or invalid payload",
             "content": {
@@ -51,16 +53,16 @@ router = APIRouter(tags=["Loans"])
         },
     },
 )
-def create_loan(payload: LoanCreate) -> LoanRead:
+def create_booking(payload: BookingCreate) -> BookingRead:
     """
-    Create a new loan.
+    Create a new booking.
 
-    :param LoanCreate payload: Loan payload
-    :return LoanRead: Created loan
+    :param BookingCreate payload: Booking payload
+    :return BookingRead: Created booking
     """
     with get_session() as session:
         try:
-            loan = svc.create_loan(
+            booking = svc.create_booking(
                 session, payload.item_id, payload.shoot_id, payload.quantity
             )
         except KeyError:
@@ -74,19 +76,21 @@ def create_loan(payload: LoanCreate) -> LoanRead:
             raise
         except Exception as e:
             raise err_internal(str(e))
-        print("✅ Created loan", loan.id)
-        return LoanRead.model_validate(loan)
+        print(" ✅ Created booking", booking.id)
+        return BookingRead.model_validate(booking)
 
 
 @router.get(
     "/",
-    response_model=list[LoanRead],
+    response_model=list[BookingRead],
     status_code=status.HTTP_200_OK,
-    summary="List loans",
-    description="List all loans.",
-    response_description="List of loans",
+    summary="List bookings",
+    description="List all bookings.",
+    response_description="List of bookings",
     responses={
-        200: {"content": {"application/json": {"example": [LoanRead.example() or {}]}}},
+        200: {
+            "content": {"application/json": {"example": [BookingRead.example() or {}]}}
+        },
         500: {
             "description": "Internal server error",
             "content": {
@@ -97,10 +101,10 @@ def create_loan(payload: LoanCreate) -> LoanRead:
         },
     },
 )
-def list_loans() -> list[LoanRead]:
+def list_bookings() -> list[BookingRead]:
     with get_session() as session:
         try:
-            return [LoanRead.model_validate(x) for x in svc.list_loans(session)]
+            return [BookingRead.model_validate(x) for x in svc.list_bookings(session)]
         except ApiException:
             raise
         except Exception as e:
@@ -108,24 +112,26 @@ def list_loans() -> list[LoanRead]:
 
 
 @router.patch(
-    "/{loan_id}",
-    response_model=LoanRead,
+    "/{booking_id}",
+    response_model=BookingRead,
     status_code=status.HTTP_200_OK,
-    summary="Update loan quantity",
-    description="Update quantity of a future loan after re-checking availability.",
-    response_description="Updated loan",
+    summary="Update booking quantity",
+    description="Update quantity of a future booking after re-checking availability.",
+    response_description="Updated booking",
     responses={
-        200: {"content": {"application/json": {"example": LoanRead.example() or {}}}},
+        200: {
+            "content": {"application/json": {"example": BookingRead.example() or {}}}
+        },
         400: {
-            "description": "Invalid payload or loan started",
+            "description": "Invalid payload or booking started",
             "content": {
                 "application/json": {
-                    "example": ApiError.example_for(ErrorCode.LOAN_ALREADY_STARTED)
+                    "example": ApiError.example_for(ErrorCode.BOOKING_ALREADY_STARTED)
                 }
             },
         },
         404: {
-            "description": "Loan or item not found",
+            "description": "Booking or item not found",
             "content": {
                 "application/json": {
                     "example": ApiError.example_for(ErrorCode.NOT_FOUND)
@@ -142,48 +148,48 @@ def list_loans() -> list[LoanRead]:
         },
     },
 )
-def update_loan(loan_id: int, payload: LoanUpdate) -> LoanRead:
+def update_booking(booking_id: int, payload: BookingUpdate) -> BookingRead:
     """
-    Update a loan quantity.
+    Update a booking quantity.
 
-    :param int loan_id: Loan ID
-    :param LoanUpdate payload: Quantity to set
-    :return LoanRead: Updated loan
+    :param int booking_id: Booking ID
+    :param BookingUpdate payload: Quantity to set
+    :return BookingRead: Updated booking
     """
     with get_session() as session:
         try:
             if payload.quantity is None:
                 raise err_invalid_payload("quantity is required")
-            loan = svc.update_loan_quantity(session, loan_id, payload.quantity)
+            booking = svc.update_booking_quantity(session, booking_id, payload.quantity)
         except KeyError:
-            raise err_not_found("loan or item")
+            raise err_not_found("booking or item")
         except ValueError as e:
             detail = str(e)
             if detail == "no availability":
                 raise err_no_availability()
-            if detail == "loan already started":
-                raise err_loan_started()
+            if detail == "booking already started":
+                raise err_booking_started()
             raise err_invalid_payload(detail)
         except ApiException:
             raise
         except Exception as e:
             raise err_internal(str(e))
-        print("✅ Updated loan", loan.id)
-        return LoanRead.model_validate(loan)
+        print(" ✅ Updated booking", booking.id)
+        return BookingRead.model_validate(booking)
 
 
 @router.post(
-    "/{loan_id}/cancel",
+    "/{booking_id}/cancel",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Cancel loan",
-    description="Cancel a future loan (delete) if it has not started yet.",
+    summary="Cancel booking",
+    description="Cancel a future booking (delete) if it has not started yet.",
     responses={
-        204: {"description": "Loan canceled"},
+        204: {"description": "Booking canceled"},
         400: {
-            "description": "Loan already started",
+            "description": "Booking already started",
             "content": {
                 "application/json": {
-                    "example": ApiError.example_for(ErrorCode.LOAN_ALREADY_STARTED)
+                    "example": ApiError.example_for(ErrorCode.BOOKING_ALREADY_STARTED)
                 }
             },
         },
@@ -197,13 +203,13 @@ def update_loan(loan_id: int, payload: LoanUpdate) -> LoanRead:
         },
     },
 )
-def cancel_loan(loan_id: int) -> Response:
-    """Cancel a future loan; not allowed if loan has started."""
+def cancel_booking(booking_id: int) -> Response:
+    """Cancel a future booking; not allowed if booking has started."""
     with get_session() as session:
         try:
-            svc.cancel_loan(session, loan_id)
+            svc.cancel_booking(session, booking_id)
         except ValueError:
-            raise err_loan_started()
+            raise err_booking_started()
         except ApiException:
             raise
         except Exception as e:

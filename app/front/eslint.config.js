@@ -3,6 +3,9 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default [
+  {
+    ignores: ["node_modules/**", "dist/**", "*.css", "**/*.css"],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -15,6 +18,10 @@ export default [
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/ban-ts-comment": [
+        "warn",
+        { "ts-ignore": "allow-with-description" },
       ],
     },
   },

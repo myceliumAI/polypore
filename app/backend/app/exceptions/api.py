@@ -69,7 +69,7 @@ def err_no_availability() -> ApiException:
     )
 
 
-def err_loan_started() -> ApiException:
+def err_booking_started() -> ApiException:
     """
     Return a 400 Bad Request error.
 
@@ -78,7 +78,7 @@ def err_loan_started() -> ApiException:
     return ApiException(
         status.HTTP_400_BAD_REQUEST,
         ApiError(
-            detail=" ❌ Loan already started", code=ErrorCode.LOAN_ALREADY_STARTED
+            detail=" ❌ Booking already started", code=ErrorCode.BOOKING_ALREADY_STARTED
         ),
     )
 
