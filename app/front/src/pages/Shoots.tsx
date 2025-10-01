@@ -12,16 +12,28 @@ import {
   TileField,
   TileFooter,
   ShareMenu,
+  Timeline,
+  MapView,
 } from "../components";
 import { Shoot } from "../types";
 import { formatDate } from "../lib/utils";
+import { batchGeocode } from "../lib/geocoding";
 
 type Editing = {
   [id: number]: { name: string; location: string; start: string; end: string };
 };
 
+type ShootWithCoords = Shoot & {
+  lat?: number;
+  lng?: number;
+};
+
 export function Shoots() {
   const [shoots, setShoots] = useState<Shoot[]>([]);
+  const [shootsWithCoords, setShootsWithCoords] = useState<ShootWithCoords[]>(
+    [],
+  );
+  const [viewMode, setViewMode] = useState<"timeline" | "map">("timeline");
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -36,6 +48,29 @@ export function Shoots() {
   useEffect(() => {
     void load();
   }, []);
+
+  // Geocode shoots when they change
+  useEffect(() => {
+    if (shoots.length === 0) {
+      setShootsWithCoords([]);
+      return;
+    }
+
+    const geocodeShoots = async () => {
+      const addresses = shoots.map((s) => s.location);
+      const coords = await batchGeocode(addresses);
+
+      const withCoords = shoots.map((shoot, i) => ({
+        ...shoot,
+        lat: coords[i]?.lat,
+        lng: coords[i]?.lng,
+      }));
+
+      setShootsWithCoords(withCoords);
+    };
+
+    void geocodeShoots();
+  }, [shoots]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,206 +198,285 @@ export function Shoots() {
         </div>
       )}
 
-      {/* Shoots grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {shoots.map((s) => {
-          const isEditing = !!editing[s.id];
-          return (
-            <Tile key={s.id}>
-              <TileHeader
-                title={
-                  isEditing ? (
-                    <Input
-                      value={editing[s.id].name}
-                      onChange={(e) =>
-                        setEditing({
-                          ...editing,
-                          [s.id]: { ...editing[s.id], name: e.target.value },
-                        })
-                      }
-                      className="text-base font-semibold"
-                    />
-                  ) : (
-                    s.name
-                  )
-                }
-                subtitle={`Shoot #${s.id}`}
-                badge={{
-                  label:
-                    new Date(s.start_date) > new Date() ? "Upcoming" : "Past",
-                  variant:
-                    new Date(s.start_date) > new Date() ? "info" : "success",
-                }}
-              />
+      {/* View mode toggle */}
+      <div className="flex items-center gap-2 mb-4">
+        <Button
+          onClick={() => setViewMode("timeline")}
+          variant={viewMode === "timeline" ? "primary" : "ghost"}
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Timeline
+        </Button>
+        <Button
+          onClick={() => setViewMode("map")}
+          variant={viewMode === "map" ? "primary" : "ghost"}
+        >
+          <svg
+            className="w-5 h-5 mr-2"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+            />
+          </svg>
+          Map
+        </Button>
+      </div>
 
-              <TileBody>
-                <dl className="space-y-3">
-                  <TileField
-                    label="Location"
-                    value={
+      {/* Timeline view */}
+      {viewMode === "timeline" && (
+        <Timeline
+          items={shoots.map((s) => {
+            const isEditing = !!editing[s.id];
+            return {
+              id: s.id,
+              startDate: new Date(s.start_date),
+              endDate: new Date(s.end_date),
+              content: (
+                <Tile key={s.id}>
+                  <TileHeader
+                    title={
                       isEditing ? (
                         <Input
-                          value={editing[s.id].location}
+                          value={editing[s.id].name}
                           onChange={(e) =>
                             setEditing({
                               ...editing,
                               [s.id]: {
                                 ...editing[s.id],
-                                location: e.target.value,
+                                name: e.target.value,
                               },
                             })
                           }
+                          className="text-base font-semibold"
                         />
                       ) : (
-                        s.location
+                        s.name
                       )
                     }
-                    icon={
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    }
+                    subtitle={`Shoot #${s.id}`}
+                    badge={{
+                      label:
+                        new Date(s.start_date) > new Date()
+                          ? "Upcoming"
+                          : "Past",
+                      variant:
+                        new Date(s.start_date) > new Date()
+                          ? "info"
+                          : "success",
+                    }}
                   />
-                  <TileField
-                    label="Start"
-                    value={
-                      isEditing ? (
-                        <input
-                          type="datetime-local"
-                          value={editing[s.id].start}
-                          onChange={(e) =>
-                            setEditing({
-                              ...editing,
-                              [s.id]: {
-                                ...editing[s.id],
-                                start: e.target.value,
-                              },
-                            })
-                          }
-                          className="w-full border border-neutral-300 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
-                        />
-                      ) : (
-                        formatDate(s.start_date)
-                      )
-                    }
-                    icon={
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    }
-                  />
-                  <TileField
-                    label="End"
-                    value={
-                      isEditing ? (
-                        <input
-                          type="datetime-local"
-                          value={editing[s.id].end}
-                          onChange={(e) =>
-                            setEditing({
-                              ...editing,
-                              [s.id]: { ...editing[s.id], end: e.target.value },
-                            })
-                          }
-                          className="w-full border border-neutral-300 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
-                        />
-                      ) : (
-                        formatDate(s.end_date)
-                      )
-                    }
-                    icon={
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    }
-                  />
-                </dl>
-              </TileBody>
 
-              <TileFooter>
-                {isEditing ? (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => saveEdit(s.id)}
-                      variant="primary"
-                      className="flex-1"
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      onClick={() => cancelEdit(s.id)}
-                      variant="ghost"
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Button onClick={() => startEdit(s)} variant="secondary">
-                        Edit
-                      </Button>
-                      <Button onClick={() => del(s.id)} variant="danger">
-                        Delete
-                      </Button>
-                    </div>
-                    <ShareMenu
-                      data={[
-                        {
-                          id: s.id,
-                          name: s.name,
-                          location: s.location,
-                          start: formatDate(s.start_date),
-                          end: formatDate(s.end_date),
-                        },
-                      ]}
-                      filename={`shoot-${s.name.toLowerCase().replace(/\s+/g, "-")}`}
-                      shareText={`Check out this shoot: ${s.name} at ${s.location}`}
-                    />
-                  </div>
-                )}
-              </TileFooter>
-            </Tile>
-          );
-        })}
-      </div>
+                  <TileBody>
+                    <dl className="space-y-3">
+                      <TileField
+                        label="Location"
+                        value={
+                          isEditing ? (
+                            <Input
+                              value={editing[s.id].location}
+                              onChange={(e) =>
+                                setEditing({
+                                  ...editing,
+                                  [s.id]: {
+                                    ...editing[s.id],
+                                    location: e.target.value,
+                                  },
+                                })
+                              }
+                            />
+                          ) : (
+                            s.location
+                          )
+                        }
+                        icon={
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                        }
+                      />
+                      <TileField
+                        label="Start"
+                        value={
+                          isEditing ? (
+                            <input
+                              type="datetime-local"
+                              value={editing[s.id].start}
+                              onChange={(e) =>
+                                setEditing({
+                                  ...editing,
+                                  [s.id]: {
+                                    ...editing[s.id],
+                                    start: e.target.value,
+                                  },
+                                })
+                              }
+                              className="w-full border border-neutral-300 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                            />
+                          ) : (
+                            formatDate(s.start_date)
+                          )
+                        }
+                        icon={
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                        }
+                      />
+                      <TileField
+                        label="End"
+                        value={
+                          isEditing ? (
+                            <input
+                              type="datetime-local"
+                              value={editing[s.id].end}
+                              onChange={(e) =>
+                                setEditing({
+                                  ...editing,
+                                  [s.id]: {
+                                    ...editing[s.id],
+                                    end: e.target.value,
+                                  },
+                                })
+                              }
+                              className="w-full border border-neutral-300 dark:border-neutral-700 rounded-lg px-3 py-2 bg-white dark:bg-neutral-900 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition text-sm"
+                            />
+                          ) : (
+                            formatDate(s.end_date)
+                          )
+                        }
+                        icon={
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                        }
+                      />
+                    </dl>
+                  </TileBody>
+
+                  <TileFooter>
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => saveEdit(s.id)}
+                          variant="primary"
+                          className="flex-1"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          onClick={() => cancelEdit(s.id)}
+                          variant="ghost"
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => startEdit(s)}
+                            variant="secondary"
+                          >
+                            Edit
+                          </Button>
+                          <Button onClick={() => del(s.id)} variant="danger">
+                            Delete
+                          </Button>
+                        </div>
+                        <ShareMenu
+                          data={[
+                            {
+                              id: s.id,
+                              name: s.name,
+                              location: s.location,
+                              start: formatDate(s.start_date),
+                              end: formatDate(s.end_date),
+                            },
+                          ]}
+                          filename={`shoot-${s.name.toLowerCase().replace(/\s+/g, "-")}`}
+                          shareText={`Check out this shoot: ${s.name} at ${s.location}`}
+                        />
+                      </div>
+                    )}
+                  </TileFooter>
+                </Tile>
+              ),
+            };
+          })}
+        />
+      )}
+
+      {/* Map view */}
+      {viewMode === "map" && (
+        <MapView
+          locations={shootsWithCoords
+            .filter((s) => s.lat && s.lng)
+            .map((s) => ({
+              id: s.id,
+              name: s.name,
+              address: s.location,
+              lat: s.lat!,
+              lng: s.lng!,
+              info: `${new Date(s.start_date).toLocaleDateString("fr-FR")} - ${new Date(s.end_date).toLocaleDateString("fr-FR")}`,
+            }))}
+          height="600px"
+        />
+      )}
     </div>
   );
 }
