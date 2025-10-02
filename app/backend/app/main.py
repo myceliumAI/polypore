@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .db.core import create_db_and_tables, auto_return_task
-from .routers import items, shoots, bookings, dashboard
+from .routers import items, shoots, bookings
 
 
 @asynccontextmanager
@@ -56,4 +56,3 @@ async def http_exception_handler(
 app.include_router(items.router, prefix="/items")
 app.include_router(shoots.router, prefix="/shoots")
 app.include_router(bookings.router, prefix="/bookings")
-app.include_router(dashboard.router, prefix="/dashboard")

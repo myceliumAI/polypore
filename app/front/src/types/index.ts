@@ -14,6 +14,7 @@ export type Booking = {
   item_id: number;
   shoot_id: number;
   quantity: number;
+  description?: string | null;
 };
 
 export type Shoot = {
@@ -24,29 +25,4 @@ export type Shoot = {
   end_date: string;
 };
 
-export type ItemAvailability = {
-  item_id: number;
-  name: string;
-  type: string;
-  count: number;
-  available: number;
-  booked: number;
-};
-
-export type TimelineEntry = {
-  date: string;
-  item_id: number;
-  available: number;
-};
-
-export type TypeTimelineEntry = {
-  date: string;
-  type: string;
-  available: number;
-};
-
-export type DashboardData = {
-  stock: ItemAvailability[];
-  timeline: TimelineEntry[];
-  type_timeline: TypeTimelineEntry[];
-};
+ 

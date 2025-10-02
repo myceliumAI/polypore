@@ -4,6 +4,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  // Use a project-local cache directory to avoid permission issues from
+  // root-owned node_modules/.vite created by containers.
+  cacheDir: path.resolve(__dirname, ".vite"),
   server: {
     host: "0.0.0.0",
     port: 5173,

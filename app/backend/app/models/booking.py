@@ -18,6 +18,7 @@ class Booking(SQLModel, table=True):
     start_date: datetime
     end_date: datetime
     returned_at: datetime | None = None
+    description: str | None = None
 
     # Relationships
     item: "Item" = Relationship(back_populates="bookings")

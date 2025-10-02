@@ -24,7 +24,6 @@ polypore is a lightweight web app to manage your film gear stock and bookings. D
 - 📦 Stock: manage items (camera/light/cable/other), stock counts
 - 🎬 Shoots: plan with name, location, start/end dates
 - 🔗 Bookings: book items per shoot; prevents overbooking
-- 📊 Dashboard: see current availability per item
 
 ---
 

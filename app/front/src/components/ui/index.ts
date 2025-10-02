@@ -11,3 +11,4 @@ export { Modal } from "./Modal";
 export { Avatar } from "./Avatar";
 export { Timeline } from "./Timeline";
 export { MapView } from "./MapView";
+export { Alert } from "./Alert";

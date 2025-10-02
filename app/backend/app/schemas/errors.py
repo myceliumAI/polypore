@@ -19,7 +19,7 @@ class ApiError(BaseSchema):
     detail: str = Field(
         ...,
         description="Error message.",
-        examples=[" ❌ item not found"],
+        examples=["item not found"],
     )
     code: ErrorCode = Field(
         ...,
@@ -30,24 +30,24 @@ class ApiError(BaseSchema):
     model_config = ConfigDict(
         json_schema_extra={
             "examples": [
-                {"detail": " ❌ item not found", "code": "NOT_FOUND"},
+                {"detail": "item not found", "code": "NOT_FOUND"},
                 {
-                    "detail": " ❌ Invalid payload: total_stock must be >= 0",
+                    "detail": "Invalid payload: total_stock must be >= 0",
                     "code": "INVALID_PAYLOAD",
                 },
                 {
-                    "detail": " ❌ Invalid dates: end_date must be after start_date",
+                    "detail": "Invalid dates: end_date must be after start_date",
                     "code": "INVALID_DATES",
                 },
                 {
-                    "detail": " ❌ No availability for requested period",
+                    "detail": "No availability for requested period",
                     "code": "NO_AVAILABILITY",
                 },
                 {
-                    "detail": " ❌ Booking already started",
+                    "detail": "Booking already started",
                     "code": "BOOKING_ALREADY_STARTED",
                 },
-                {"detail": " ❌ Internal server error", "code": "INTERNAL_ERROR"},
+                {"detail": "Internal server error", "code": "INTERNAL_ERROR"},
             ]
         }
     )
@@ -62,12 +62,12 @@ class ApiError(BaseSchema):
         :return dict: Example payload
         """
         defaults = {
-            ErrorCode.NOT_FOUND: " ❌ resource not found",
-            ErrorCode.INVALID_PAYLOAD: " ❌ Invalid payload",
-            ErrorCode.INVALID_DATES: " ❌ Invalid dates: end_date must be after start_date",
-            ErrorCode.NO_AVAILABILITY: " ❌ No availability for requested period",
-            ErrorCode.BOOKING_ALREADY_STARTED: " ❌ Booking already started",
-            ErrorCode.INTERNAL_ERROR: " ❌ Internal server error",
+            ErrorCode.NOT_FOUND: "resource not found",
+            ErrorCode.INVALID_PAYLOAD: "Invalid payload",
+            ErrorCode.INVALID_DATES: "Invalid dates: end_date must be after start_date",
+            ErrorCode.NO_AVAILABILITY: "No availability for requested period",
+            ErrorCode.BOOKING_ALREADY_STARTED: "Booking already started",
+            ErrorCode.INTERNAL_ERROR: "Internal server error",
         }
-        message = detail if detail is not None else defaults.get(code, " ❌ Error")
+        message = detail if detail is not None else defaults.get(code, "Error")
         return {"detail": message, "code": code}

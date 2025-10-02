@@ -25,7 +25,7 @@ def err_not_found(entity: str) -> ApiException:
     """
     return ApiException(
         status.HTTP_404_NOT_FOUND,
-        ApiError(detail=f" ❌ {entity} not found", code=ErrorCode.NOT_FOUND),
+        ApiError(detail=f"{entity} not found", code=ErrorCode.NOT_FOUND),
     )
 
 
@@ -39,7 +39,7 @@ def err_invalid_payload(reason: str) -> ApiException:
     return ApiException(
         status.HTTP_400_BAD_REQUEST,
         ApiError(
-            detail=f" ❌ Invalid payload: {reason}", code=ErrorCode.INVALID_PAYLOAD
+            detail=f"Invalid payload: {reason}", code=ErrorCode.INVALID_PAYLOAD
         ),
     )
 
@@ -53,7 +53,7 @@ def err_invalid_dates() -> ApiException:
     return ApiException(
         status.HTTP_400_BAD_REQUEST,
         ApiError(
-            detail=" ❌ Invalid dates: end_date must be after start_date",
+            detail="Invalid dates: end_date must be after start_date",
             code=ErrorCode.INVALID_DATES,
         ),
     )
@@ -63,7 +63,7 @@ def err_no_availability() -> ApiException:
     return ApiException(
         status.HTTP_400_BAD_REQUEST,
         ApiError(
-            detail=" ❌ No availability for requested period",
+            detail="No availability for requested period",
             code=ErrorCode.NO_AVAILABILITY,
         ),
     )
@@ -78,7 +78,7 @@ def err_booking_started() -> ApiException:
     return ApiException(
         status.HTTP_400_BAD_REQUEST,
         ApiError(
-            detail=" ❌ Booking already started", code=ErrorCode.BOOKING_ALREADY_STARTED
+            detail="Booking already started", code=ErrorCode.BOOKING_ALREADY_STARTED
         ),
     )
 
@@ -92,5 +92,5 @@ def err_internal(message: str = "Internal server error") -> ApiException:
     """
     return ApiException(
         status.HTTP_500_INTERNAL_SERVER_ERROR,
-        ApiError(detail=f" ❌ {message}", code=ErrorCode.INTERNAL_ERROR),
+        ApiError(detail=f"{message}", code=ErrorCode.INTERNAL_ERROR),
     )

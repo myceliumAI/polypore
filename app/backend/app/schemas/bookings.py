@@ -23,6 +23,11 @@ class BookingCreate(BaseSchema):
         description="Quantity to book.",
         examples=[1, 2],
     )
+    description: str | None = Field(
+        default=None,
+        description="Optional human description or reason for the booking.",
+        examples=["Backup light for scene 2"],
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -34,16 +39,42 @@ class BookingCreate(BaseSchema):
 
 
 class BookingUpdate(BaseSchema):
-    """Partial update for a booking (quantity only in this POC)."""
+    """Partial update for a booking (item_id, shoot_id, quantity, description)."""
 
+    item_id: int | None = Field(
+        default=None,
+        ge=1,
+        description="New item id (optional)",
+        examples=[2],
+    )
+    shoot_id: int | None = Field(
+        default=None,
+        ge=1,
+        description="New shoot id (optional)",
+        examples=[3],
+    )
     quantity: int | None = Field(
         default=None,
         description="New quantity.",
         ge=1,
         examples=[2],
     )
+    description: str | None = Field(
+        default=None,
+        description="New description (optional).",
+        examples=["Changed due to client request"],
+    )
 
-    model_config = ConfigDict(json_schema_extra={"examples": [{"quantity": 2}]})
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {"quantity": 2},
+                {"item_id": 2},
+                {"shoot_id": 3},
+                {"item_id": 2, "shoot_id": 3, "quantity": 1},
+            ]
+        }
+    )
 
 
 class BookingRead(BaseSchema):
@@ -73,6 +104,7 @@ class BookingRead(BaseSchema):
         ...,
         examples=[1],
     )
+    description: str | None = Field(default=None)
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -63,7 +63,7 @@ def create_booking(payload: BookingCreate) -> BookingRead:
     with get_session() as session:
         try:
             booking = svc.create_booking(
-                session, payload.item_id, payload.shoot_id, payload.quantity
+                session, payload.item_id, payload.shoot_id, payload.quantity, payload.description
             )
         except KeyError:
             raise err_not_found("item or shoot")
@@ -115,8 +115,8 @@ def list_bookings() -> list[BookingRead]:
     "/{booking_id}",
     response_model=BookingRead,
     status_code=status.HTTP_200_OK,
-    summary="Update booking quantity",
-    description="Update quantity of a future booking after re-checking availability.",
+    summary="Update booking",
+    description="Atomically update item, shoot and/or quantity of a future booking with availability checks.",
     response_description="Updated booking",
     responses={
         200: {
@@ -150,19 +150,31 @@ def list_bookings() -> list[BookingRead]:
 )
 def update_booking(booking_id: int, payload: BookingUpdate) -> BookingRead:
     """
-    Update a booking quantity.
+    Update a booking.
 
     :param int booking_id: Booking ID
-    :param BookingUpdate payload: Quantity to set
+    :param BookingUpdate payload: Fields to update
     :return BookingRead: Updated booking
     """
     with get_session() as session:
         try:
-            if payload.quantity is None:
-                raise err_invalid_payload("quantity is required")
-            booking = svc.update_booking_quantity(session, booking_id, payload.quantity)
+            if (
+                payload.quantity is None
+                and payload.item_id is None
+                and payload.shoot_id is None
+                and payload.description is None
+            ):
+                raise err_invalid_payload("at least one of item_id, shoot_id, quantity, description is required")
+            booking = svc.update_booking(
+                session,
+                booking_id,
+                item_id=payload.item_id,
+                shoot_id=payload.shoot_id,
+                quantity=payload.quantity,
+                description=payload.description,
+            )
         except KeyError:
-            raise err_not_found("booking or item")
+            raise err_not_found("booking or item or shoot")
         except ValueError as e:
             detail = str(e)
             if detail == "no availability":

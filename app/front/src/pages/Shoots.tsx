@@ -11,9 +11,9 @@ import {
   TileBody,
   TileField,
   TileFooter,
-  ShareMenu,
   Timeline,
   MapView,
+  Alert,
 } from "../components";
 import { Shoot } from "../types";
 import { formatDate } from "../lib/utils";
@@ -42,6 +42,18 @@ export function Shoots() {
   const [endTime, setEndTime] = useState("18:00");
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editing>({});
+  // Filters
+  const [filterName, setFilterName] = useState("");
+  const [filterStartDate, setFilterStartDate] = useState<Date | undefined>(
+    undefined,
+  );
+  const [filterEndDate, setFilterEndDate] = useState<Date | undefined>(
+    undefined,
+  );
+  const [filterStartTime, setFilterStartTime] = useState("00:00");
+  const [filterEndTime, setFilterEndTime] = useState("23:59");
+  const [showPast, setShowPast] = useState(false);
+  const [showUpcoming, setShowUpcoming] = useState(false);
 
   const load = () => api.get<Shoot[]>("/shoots").then((r) => setShoots(r.data));
 
@@ -148,15 +160,88 @@ export function Shoots() {
     }
   };
 
+  const downloadCSV = (
+    data: Record<string, string | number>[],
+    filename: string,
+  ) => {
+    if (data.length === 0) return;
+    const headers = Object.keys(data[0]);
+    const csvRows = [
+      headers.join(","),
+      ...data.map((row) =>
+        headers
+          .map((header) => {
+            const value = row[header]?.toString() || "";
+            return value.includes(",") || value.includes('"')
+              ? `"${value.replace(/"/g, '""')}"`
+              : value;
+          })
+          .join(","),
+      ),
+    ];
+
+    const csv = csvRows.join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // --- Filtering ---
+  const normalizeWithTime = (date: Date, timeHHmm: string): Date => {
+    const [h, m] = timeHHmm.split(":");
+    const d = new Date(date);
+    d.setHours(parseInt(h), parseInt(m), 0, 0);
+    return d;
+  };
+
+  const periodsOverlap = (
+    aStart: Date,
+    aEnd: Date,
+    bStart: Date,
+    bEnd: Date,
+  ): boolean => aStart <= bEnd && aEnd >= bStart;
+
+  const matchesFilters = (s: Shoot): boolean => {
+    const now = new Date();
+    const sStart = new Date(s.start_date);
+    const sEnd = new Date(s.end_date);
+
+    const nameOk = !filterName.trim()
+      ? true
+      : s.name.toLowerCase().includes(filterName.trim().toLowerCase());
+
+    const isUpcoming = sStart > now;
+    const isPast = !isUpcoming;
+    const statusOk = showPast || showUpcoming
+      ? (showPast && isPast) || (showUpcoming && isUpcoming)
+      : true;
+
+    const hasRange = !!filterStartDate || !!filterEndDate;
+    let rangeOk = true;
+    if (hasRange && (filterStartDate || filterEndDate)) {
+      const rStart = filterStartDate
+        ? normalizeWithTime(filterStartDate, filterStartTime)
+        : new Date(-8640000000000000);
+      const rEnd = filterEndDate
+        ? normalizeWithTime(filterEndDate, filterEndTime)
+        : new Date(8640000000000000);
+      rangeOk = periodsOverlap(sStart, sEnd, rStart, rEnd);
+    }
+
+    return nameOk && statusOk && rangeOk;
+  };
+
+  const filteredShoots = shoots.filter(matchesFilters);
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Shoots</h1>
-        <div className="text-sm text-neutral-500">
-          {shoots.length} shoot{shoots.length !== 1 ? "s" : ""}
-        </div>
-      </div>
+      {/* (Removed page title header) */}
 
       {/* Add new shoot */}
       <Card title="Add new shoot">
@@ -192,11 +277,48 @@ export function Shoots() {
       </Card>
 
       {/* Error message */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-sm text-red-800 dark:text-red-200">
-          ❌ {error}
+      {error && <Alert variant="error" onClose={() => setError(null)}>{error}</Alert>}
+
+      {/* Filters */}
+      <Card title="Filters">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Input
+              value={filterName}
+              onChange={(e) => setFilterName(e.target.value)}
+              placeholder="Search by name"
+            />
+            <label className="inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+              <input
+                type="checkbox"
+                checked={showPast}
+                onChange={(e) => setShowPast(e.target.checked)}
+                className="rounded border-neutral-300 dark:border-neutral-700"
+              />
+              Past only
+            </label>
+            <label className="inline-flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+              <input
+                type="checkbox"
+                checked={showUpcoming}
+                onChange={(e) => setShowUpcoming(e.target.checked)}
+                className="rounded border-neutral-300 dark:border-neutral-700"
+              />
+              Upcoming only
+            </label>
+          </div>
+          <DateRangePicker
+            startDate={filterStartDate}
+            endDate={filterEndDate}
+            startTime={filterStartTime}
+            endTime={filterEndTime}
+            onStartDateChange={setFilterStartDate}
+            onEndDateChange={setFilterEndDate}
+            onStartTimeChange={setFilterStartTime}
+            onEndTimeChange={setFilterEndTime}
+          />
         </div>
-      )}
+      </Card>
 
       {/* View mode toggle */}
       <div className="flex items-center gap-2 mb-4">
@@ -243,7 +365,7 @@ export function Shoots() {
       {/* Timeline view */}
       {viewMode === "timeline" && (
         <Timeline
-          items={shoots.map((s) => {
+          items={filteredShoots.map((s) => {
             const isEditing = !!editing[s.id];
             return {
               id: s.id,
@@ -252,25 +374,7 @@ export function Shoots() {
               content: (
                 <Tile key={s.id}>
                   <TileHeader
-                    title={
-                      isEditing ? (
-                        <Input
-                          value={editing[s.id].name}
-                          onChange={(e) =>
-                            setEditing({
-                              ...editing,
-                              [s.id]: {
-                                ...editing[s.id],
-                                name: e.target.value,
-                              },
-                            })
-                          }
-                          className="text-base font-semibold"
-                        />
-                      ) : (
-                        s.name
-                      )
-                    }
+                    title={s.name}
                     subtitle={`Shoot #${s.id}`}
                     badge={{
                       label:
@@ -286,6 +390,28 @@ export function Shoots() {
 
                   <TileBody>
                     <dl className="space-y-3">
+                      <TileField
+                        label="Name"
+                        value={
+                          isEditing ? (
+                            <Input
+                              value={editing[s.id].name}
+                              onChange={(e) =>
+                                setEditing({
+                                  ...editing,
+                                  [s.id]: {
+                                    ...editing[s.id],
+                                    name: e.target.value,
+                                  },
+                                })
+                              }
+                            />
+                          ) : (
+                            s.name
+                          )
+                        }
+                      />
+
                       <TileField
                         label="Location"
                         value={
@@ -438,19 +564,25 @@ export function Shoots() {
                             Delete
                           </Button>
                         </div>
-                        <ShareMenu
-                          data={[
-                            {
-                              id: s.id,
-                              name: s.name,
-                              location: s.location,
-                              start: formatDate(s.start_date),
-                              end: formatDate(s.end_date),
-                            },
-                          ]}
-                          filename={`shoot-${s.name.toLowerCase().replace(/\s+/g, "-")}`}
-                          shareText={`Check out this shoot: ${s.name} at ${s.location}`}
-                        />
+                        <Button
+                          variant="ghost"
+                          onClick={() =>
+                            downloadCSV(
+                              [
+                                {
+                                  id: s.id,
+                                  name: s.name,
+                                  location: s.location,
+                                  start: formatDate(s.start_date),
+                                  end: formatDate(s.end_date),
+                                },
+                              ],
+                              `shoot-${s.name.toLowerCase().replace(/\s+/g, "-")}`,
+                            )
+                          }
+                        >
+                          Download CSV
+                        </Button>
                       </div>
                     )}
                   </TileFooter>
@@ -466,6 +598,7 @@ export function Shoots() {
         <MapView
           locations={shootsWithCoords
             .filter((s) => s.lat && s.lng)
+            .filter((s) => matchesFilters(s))
             .map((s) => ({
               id: s.id,
               name: s.name,

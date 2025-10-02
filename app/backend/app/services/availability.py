@@ -1,17 +1,9 @@
-from datetime import datetime, timezone, timedelta, date
+from datetime import datetime, timezone
 
 from sqlmodel import Session, select
 
-from ..models.item import Item
 from ..models.booking import Booking
-from ..models.shoot import Shoot
-from ..schemas.dashboard import (
-    ItemAvailability,
-    ItemTimeline,
-    DayAvailability,
-    DayBreakdown,
-    TypeTimeline,
-)
+ 
 
 
 def to_utc_aware(dt: datetime) -> datetime:
@@ -71,126 +63,32 @@ def reserved_quantity_for_item(
     )
 
 
-def compute_stock_rows(session: Session, when: datetime) -> list[ItemAvailability]:
+def reserved_quantity_for_item_excluding(
+    session: Session,
+    item_id: int,
+    start: datetime,
+    end: datetime,
+    exclude_booking_id: int,
+) -> int:
     """
-    Build dashboard rows of availability at a moment in time.
+    Compute reserved quantity for an item over a period, excluding one booking.
 
     :param Session session: Active DB session
-    :param datetime when: Timestamp to evaluate availability
-    :return list[ItemAvailability]: Per-item availability snapshot
+    :param int item_id: Item id
+    :param datetime start: Period start
+    :param datetime end: Period end
+    :param int exclude_booking_id: Booking id to exclude from the count
+    :return int: Reserved quantity excluding given booking
     """
-    when_u = to_utc_aware(when)
-    items: list[Item] = session.exec(select(Item)).all()
     bookings: list[Booking] = session.exec(
-        select(Booking).where(Booking.returned_at.is_(None))
+        select(Booking).where(
+            Booking.item_id == item_id, Booking.returned_at.is_(None), Booking.id != exclude_booking_id
+        )
     ).all()
-
-    rows: list[ItemAvailability] = []
-    for item in items:
-        active_reserved = sum(
-            booking.quantity
-            for booking in bookings
-            if booking.item_id == item.id
-            and (
-                to_utc_aware(booking.start_date)
-                <= when_u
-                <= to_utc_aware(booking.end_date)
-            )
-        )
-        available = max(item.total_stock - active_reserved, 0)
-        rows.append(
-            ItemAvailability(
-                item_id=item.id,
-                name=item.name,
-                type=item.type,
-                total_stock=item.total_stock,
-                available_now=available,
-            )
-        )
-    return rows
+    return sum(
+        booking.quantity
+        for booking in bookings
+        if periods_overlap(booking.start_date, booking.end_date, start, end)
+    )
 
 
-def compute_timeline(session: Session, days: int = 90) -> list[ItemTimeline]:
-    """Compute per-item daily availability with breakdown for next `days`.
-
-    :param Session session: Active DB session
-    :param int days: Number of days to compute
-    :return list[ItemTimeline]: Per-item timeline
-    """
-    today = datetime.now(timezone.utc).date()
-    items: list[Item] = session.exec(select(Item)).all()
-    bookings: list[Booking] = session.exec(select(Booking)).all()
-    shoots: dict[int, Shoot] = {s.id: s for s in session.exec(select(Shoot)).all()}
-
-    timelines: list[ItemTimeline] = []
-    for item in items:
-        series: list[DayAvailability] = []
-        for i in range(days):
-            d: date = today + timedelta(days=i)
-            day_start = datetime(d.year, d.month, d.day, tzinfo=timezone.utc)
-            day_end = day_start + timedelta(days=1)
-
-            day_bookings = [
-                bk
-                for bk in bookings
-                if bk.item_id == item.id
-                and periods_overlap(bk.start_date, bk.end_date, day_start, day_end)
-            ]
-            total_reserved = sum(bk.quantity for bk in day_bookings)
-            available = max(item.total_stock - total_reserved, 0)
-            breakdown = [
-                DayBreakdown(
-                    shoot_id=bk.shoot_id,
-                    shoot_name=(
-                        shoots.get(bk.shoot_id).name
-                        if shoots.get(bk.shoot_id)
-                        else str(bk.shoot_id)
-                    ),
-                    quantity=bk.quantity,
-                )
-                for bk in day_bookings
-            ]
-            series.append(
-                DayAvailability(
-                    date=d.isoformat(),
-                    available=available,
-                    total=item.total_stock,
-                    breakdown=breakdown,
-                )
-            )
-        timelines.append(
-            ItemTimeline(item_id=item.id, name=item.name, type=item.type, series=series)
-        )
-    return timelines
-
-
-def compute_type_timeline(session: Session, days: int = 90) -> list[TypeTimeline]:
-    """Aggregate per-type daily availability from item timelines.
-
-    :param Session session: Active DB session
-    :param int days: Number of days to compute
-    :return list[TypeTimeline]: Per-item type timeline
-    """
-    item_series = compute_timeline(session, days=days)
-    # Build a dict: type -> list[DayAvailability] aggregated by day index
-    agg: dict[str, list[DayAvailability]] = {}
-    for item in item_series:
-        key = item.type.value if hasattr(item.type, "value") else str(item.type)
-        if key not in agg:
-            agg[key] = [
-                DayAvailability(date=day.date, available=0, total=0, breakdown=[])
-                for day in item.series
-            ]
-        for idx, day in enumerate(item.series):
-            agg[key][idx].available += day.available
-            agg[key][idx].total += day.total
-            # no need to merge breakdowns across items in type view (could explode), keep empty
-    return [
-        TypeTimeline(
-            type=item_series[0].type.__class__(k)
-            if hasattr(item_series[0].type, "__class__")
-            else k,
-            series=v,
-        )
-        for k, v in agg.items()
-    ]

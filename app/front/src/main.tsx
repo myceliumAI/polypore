@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes, NavLink } from "react-router-dom";
 import "./index.css";
-import { Dashboard } from "./pages/Dashboard";
 import { Stock } from "./pages/Stock";
 import { Bookings } from "./pages/Bookings";
 import { Shoots } from "./pages/Shoots";
@@ -19,25 +18,11 @@ function App() {
           </div>
           <nav className="mt-2 space-y-1">
             <NavLink
-              to="/"
-              className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                }`
-              }
-              end
-            >
-              Overview
-            </NavLink>
-            <NavLink
               to="/stock"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-lg transition-colors font-medium ${isActive
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -46,10 +31,9 @@ function App() {
             <NavLink
               to="/bookings"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-lg transition-colors font-medium ${isActive
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -58,10 +42,9 @@ function App() {
             <NavLink
               to="/shoots"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-lg transition-colors font-medium ${isActive
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -79,7 +62,7 @@ function App() {
         {/* Main content */}
         <main className="flex-1 space-y-6 min-w-0">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Stock />} />
             <Route path="/stock" element={<Stock />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/shoots" element={<Shoots />} />
@@ -90,25 +73,11 @@ function App() {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-2xl border border-neutral-200/70 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 backdrop-blur px-2 py-2 shadow-lg">
         <NavLink
-          to="/"
-          className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
-              isActive
-                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                : "text-neutral-700 dark:text-neutral-300"
-            }`
-          }
-          end
-        >
-          Overview
-        </NavLink>
-        <NavLink
           to="/stock"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
-              isActive
-                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                : "text-neutral-700 dark:text-neutral-300"
+            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${isActive
+              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+              : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
@@ -117,10 +86,9 @@ function App() {
         <NavLink
           to="/bookings"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
-              isActive
-                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                : "text-neutral-700 dark:text-neutral-300"
+            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${isActive
+              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+              : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
@@ -129,10 +97,9 @@ function App() {
         <NavLink
           to="/shoots"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
-              isActive
-                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                : "text-neutral-700 dark:text-neutral-300"
+            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${isActive
+              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+              : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
