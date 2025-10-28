@@ -13,18 +13,26 @@ RUN if [ -f yarn.lock ]; then yarn install; else yarn install; fi
 # Copy source code
 COPY . /app
 
+ARG VITE_API_URL=/api
+ENV NODE_ENV=production
+
 # Build the application
 RUN yarn build
 
 # Production stage
 FROM nginx:alpine
 
+# Install gettext for envsubst
+RUN apk add --no-cache gettext
+
 # Copy built files from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration (optional)
-# COPY nginx.conf /etc/nginx/nginx.conf
+# Copy nginx template and entrypoint
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"] 
+ENTRYPOINT ["/docker-entrypoint.sh"] 
