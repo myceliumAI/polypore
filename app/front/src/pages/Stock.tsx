@@ -25,7 +25,7 @@ export function Stock() {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editing>({});
 
-  const load = () => api.get<Item[]>("/items").then((r) => setItems(r.data));
+  const load = () => api.get<Item[]>("/items/").then((r) => setItems(r.data));
 
   useEffect(() => {
     void load();
@@ -34,7 +34,7 @@ export function Stock() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/items", { name, type, total_stock: total });
+      await api.post("/items/", { name, type, total_stock: total });
       setName("");
       setType("camera");
       setTotal(1);

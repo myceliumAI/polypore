@@ -18,9 +18,9 @@ export function Bookings() {
 
   const load = async () => {
     const [bk, it, sh] = await Promise.all([
-      api.get<Booking[]>("/bookings"),
-      api.get<Item[]>("/items"),
-      api.get<Shoot[]>("/shoots"),
+      api.get<Booking[]>("/bookings/"),
+      api.get<Item[]>("/items/"),
+      api.get<Shoot[]>("/shoots/"),
     ]);
     setBookings(bk.data);
     setItems(it.data);
@@ -34,7 +34,7 @@ export function Bookings() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/bookings", {
+      await api.post("/bookings/", {
         item_id: parseInt(itemId),
         shoot_id: parseInt(shootId),
         quantity: parseInt(quantity),

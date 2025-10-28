@@ -24,12 +24,7 @@ async def lifespan(app: FastAPI):
         print("💡 Shutdown background tasks")
 
 
-app = FastAPI(
-    title="Polypore Stock API", 
-    version="0.1.0", 
-    lifespan=lifespan,
-    redirect_slashes=False  # Disable automatic redirects for trailing slashes
-)
+app = FastAPI(title="Polypore Stock API", version="0.1.0", lifespan=lifespan)
 
 # CORS
 app.add_middleware(

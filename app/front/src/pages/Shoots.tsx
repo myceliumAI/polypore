@@ -55,7 +55,7 @@ export function Shoots() {
   const [showPast, setShowPast] = useState(false);
   const [showUpcoming, setShowUpcoming] = useState(false);
 
-  const load = () => api.get<Shoot[]>("/shoots").then((r) => setShoots(r.data));
+  const load = () => api.get<Shoot[]>("/shoots/").then((r) => setShoots(r.data));
 
   useEffect(() => {
     void load();
@@ -98,7 +98,7 @@ export function Shoots() {
       const [endHour, endMin] = endTime.split(":");
       endDateTime.setHours(parseInt(endHour), parseInt(endMin));
 
-      await api.post("/shoots", {
+      await api.post("/shoots/", {
         name,
         location,
         start_date: startDateTime.toISOString(),
