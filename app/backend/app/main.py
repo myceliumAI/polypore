@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from .db.core import create_db_and_tables, auto_return_task
 from .routers import items, shoots, bookings
+from .settings import settings
 
 
 @asynccontextmanager
@@ -28,7 +29,7 @@ app = FastAPI(title="Polypore Stock API", version="0.1.0", lifespan=lifespan)
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.backend_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

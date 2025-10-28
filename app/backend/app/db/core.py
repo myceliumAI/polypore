@@ -6,12 +6,24 @@ from typing import Iterator
 
 from sqlmodel import SQLModel, Session, create_engine, select
 
-DATABASE_URL = "sqlite:///./data/polypore.db"
-engine = create_engine(
-    DATABASE_URL,
-    echo=False,
-    connect_args={"check_same_thread": False},
-)
+from ..settings import settings
+
+# Configure engine based on database type
+if settings.database_url.startswith("postgres"):
+    # PostgreSQL configuration
+    engine = create_engine(
+        settings.database_url,
+        echo=False,
+        pool_pre_ping=True,  # Verify connections before use
+        pool_recycle=300,    # Recycle connections every 5 minutes
+    )
+else:
+    # SQLite configuration
+    engine = create_engine(
+        settings.database_url,
+        echo=False,
+        connect_args={"check_same_thread": False},
+    )
 
 
 def create_db_and_tables() -> None:
