@@ -24,4 +24,4 @@ COPY . /app
 
 EXPOSE 8000
 
-CMD ["sh", "-lc", "make dev"] 
+CMD ["sh", "-lc", "make run"] 
