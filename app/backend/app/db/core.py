@@ -40,11 +40,24 @@ def create_db_and_tables() -> None:
     # Lightweight migration: ensure optional description column exists on booking
     try:
         with engine.connect() as conn:
-            cols = conn.exec_driver_sql("PRAGMA table_info(booking)").fetchall()
-            col_names = {row[1] for row in cols}  # row[1] is column name
-            if "description" not in col_names:
-                conn.exec_driver_sql("ALTER TABLE booking ADD COLUMN description TEXT NULL")
-                print(" ✅ Added optional column booking.description")
+            dialect = conn.dialect.name  # 'postgresql' or 'sqlite'
+            if dialect == "sqlite":
+                cols = conn.exec_driver_sql("PRAGMA table_info(booking)").fetchall()
+                col_names = {row[1] for row in cols}
+                if "description" not in col_names:
+                    conn.exec_driver_sql(
+                        "ALTER TABLE booking ADD COLUMN description TEXT NULL"
+                    )
+                    print(" ✅ Added booking.description (sqlite)")
+            elif dialect == "postgresql":
+                # One-liner, idempotent in Postgres
+                conn.exec_driver_sql("""
+                    ALTER TABLE IF EXISTS public.booking
+                    ADD COLUMN IF NOT EXISTS description TEXT
+                """)
+                print(" ✅ Ensured booking.description (postgres)")
+            else:
+                print(f"ℹ️ Skipping ad-hoc migration for dialect={dialect}")
     except Exception as exc:  # noqa: BLE001
         # Non-fatal; continue running even if migration failed (e.g., permissions)
         print(f"⚠️ Migration check failed for booking.description: {exc}")
