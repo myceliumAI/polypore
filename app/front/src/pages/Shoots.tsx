@@ -55,7 +55,8 @@ export function Shoots() {
   const [showPast, setShowPast] = useState(false);
   const [showUpcoming, setShowUpcoming] = useState(false);
 
-  const load = () => api.get<Shoot[]>("/shoots/").then((r) => setShoots(r.data));
+  const load = () =>
+    api.get<Shoot[]>("/shoots/").then((r) => setShoots(r.data));
 
   useEffect(() => {
     void load();
@@ -218,9 +219,10 @@ export function Shoots() {
 
     const isUpcoming = sStart > now;
     const isPast = !isUpcoming;
-    const statusOk = showPast || showUpcoming
-      ? (showPast && isPast) || (showUpcoming && isUpcoming)
-      : true;
+    const statusOk =
+      showPast || showUpcoming
+        ? (showPast && isPast) || (showUpcoming && isUpcoming)
+        : true;
 
     const hasRange = !!filterStartDate || !!filterEndDate;
     let rangeOk = true;
@@ -277,7 +279,11 @@ export function Shoots() {
       </Card>
 
       {/* Error message */}
-      {error && <Alert variant="error" onClose={() => setError(null)}>{error}</Alert>}
+      {error && (
+        <Alert variant="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
       {/* Filters */}
       <Card title="Filters">

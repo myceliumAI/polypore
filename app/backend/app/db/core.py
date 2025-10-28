@@ -15,7 +15,7 @@ if settings.database_url.startswith("postgres"):
         settings.database_url,
         echo=False,
         pool_pre_ping=True,  # Verify connections before use
-        pool_recycle=300,    # Recycle connections every 5 minutes
+        pool_recycle=300,  # Recycle connections every 5 minutes
     )
 else:
     # SQLite configuration

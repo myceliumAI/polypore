@@ -38,9 +38,7 @@ def err_invalid_payload(reason: str) -> ApiException:
     """
     return ApiException(
         status.HTTP_400_BAD_REQUEST,
-        ApiError(
-            detail=f"Invalid payload: {reason}", code=ErrorCode.INVALID_PAYLOAD
-        ),
+        ApiError(detail=f"Invalid payload: {reason}", code=ErrorCode.INVALID_PAYLOAD),
     )
 
 

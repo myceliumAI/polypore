@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 
 from ..models.booking import Booking
- 
 
 
 def to_utc_aware(dt: datetime) -> datetime:
@@ -82,7 +81,9 @@ def reserved_quantity_for_item_excluding(
     """
     bookings: list[Booking] = session.exec(
         select(Booking).where(
-            Booking.item_id == item_id, Booking.returned_at.is_(None), Booking.id != exclude_booking_id
+            Booking.item_id == item_id,
+            Booking.returned_at.is_(None),
+            Booking.id != exclude_booking_id,
         )
     ).all()
     return sum(
@@ -90,5 +91,3 @@ def reserved_quantity_for_item_excluding(
         for booking in bookings
         if periods_overlap(booking.start_date, booking.end_date, start, end)
     )
-
-

@@ -63,7 +63,11 @@ def create_booking(payload: BookingCreate) -> BookingRead:
     with get_session() as session:
         try:
             booking = svc.create_booking(
-                session, payload.item_id, payload.shoot_id, payload.quantity, payload.description
+                session,
+                payload.item_id,
+                payload.shoot_id,
+                payload.quantity,
+                payload.description,
             )
         except KeyError:
             raise err_not_found("item or shoot")
@@ -164,7 +168,9 @@ def update_booking(booking_id: int, payload: BookingUpdate) -> BookingRead:
                 and payload.shoot_id is None
                 and payload.description is None
             ):
-                raise err_invalid_payload("at least one of item_id, shoot_id, quantity, description is required")
+                raise err_invalid_payload(
+                    "at least one of item_id, shoot_id, quantity, description is required"
+                )
             booking = svc.update_booking(
                 session,
                 booking_id,

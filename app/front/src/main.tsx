@@ -20,9 +20,10 @@ function App() {
             <NavLink
               to="/stock"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${isActive
-                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-lg transition-colors font-medium ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -31,9 +32,10 @@ function App() {
             <NavLink
               to="/bookings"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${isActive
-                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-lg transition-colors font-medium ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -42,9 +44,10 @@ function App() {
             <NavLink
               to="/shoots"
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-lg transition-colors font-medium ${isActive
-                  ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-                  : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                `block px-3 py-2 rounded-lg transition-colors font-medium ${
+                  isActive
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
                 }`
               }
             >
@@ -75,9 +78,10 @@ function App() {
         <NavLink
           to="/stock"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${isActive
-              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-              : "text-neutral-700 dark:text-neutral-300"
+            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
+              isActive
+                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
@@ -86,9 +90,10 @@ function App() {
         <NavLink
           to="/bookings"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${isActive
-              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-              : "text-neutral-700 dark:text-neutral-300"
+            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
+              isActive
+                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >
@@ -97,9 +102,10 @@ function App() {
         <NavLink
           to="/shoots"
           className={({ isActive }) =>
-            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${isActive
-              ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
-              : "text-neutral-700 dark:text-neutral-300"
+            `px-4 py-2 rounded-xl text-xs font-medium transition-colors ${
+              isActive
+                ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm"
+                : "text-neutral-700 dark:text-neutral-300"
             }`
           }
         >

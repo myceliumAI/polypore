@@ -21,7 +21,7 @@ export function Tile({ children, className = "", onClick }: TileProps) {
       className={cn(
         "bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow",
         onClick &&
-        "cursor-pointer hover:border-purple-300 dark:hover:border-purple-700",
+          "cursor-pointer hover:border-purple-300 dark:hover:border-purple-700",
         className,
       )}
     >

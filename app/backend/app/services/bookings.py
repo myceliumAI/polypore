@@ -23,7 +23,11 @@ def list_bookings(session: Session) -> List[Booking]:
 
 
 def create_booking(
-    session: Session, item_id: int, shoot_id: int, quantity: int, description: str | None = None
+    session: Session,
+    item_id: int,
+    shoot_id: int,
+    quantity: int,
+    description: str | None = None,
 ) -> Booking:
     """
     Create a new booking with availability validation.

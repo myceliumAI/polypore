@@ -2,6 +2,7 @@ from typing import List
 from sqlmodel import Session, select
 
 from ..models.item import Item, ItemType
+from ..models.booking import Booking
 
 
 def list_items(session: Session) -> List[Item]:
@@ -69,7 +70,7 @@ def update_item(
 
 def delete_item(session: Session, item_id: int) -> None:
     """
-    Delete an item if it exists.
+    Delete an item and all related bookings.
 
     :param Session session: Active database session.
     :param int item_id: Target item identifier.
@@ -77,6 +78,13 @@ def delete_item(session: Session, item_id: int) -> None:
     item = session.get(Item, item_id)
     if not item:
         return None
+
+    # Delete all bookings for this item first
+    bookings = session.exec(select(Booking).where(Booking.item_id == item_id)).all()
+    for booking in bookings:
+        session.delete(booking)
+
+    # Then delete the item
     session.delete(item)
     session.commit()
     return None
